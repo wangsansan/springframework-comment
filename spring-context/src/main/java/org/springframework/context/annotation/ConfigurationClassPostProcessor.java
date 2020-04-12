@@ -215,7 +215,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 	/**
 	 * Derive further bean definitions from the configuration classes in the registry.
-	 * 从注册的配置类派生进一步的beanDefiniton，也就是非（Spring起始添加进BeanDefinitionMap中的5个和配置类）的BeanDefinition
+	 * 从注册的配置类派生进一步的beanDefinition，也就是非（Spring起始添加进BeanDefinitionMap中的5个和配置类）的BeanDefinition
 	 */
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
@@ -323,8 +323,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
 			// 这是spring的第二步，parse，处理配置类
+			// 主要工作是处理配置类上的各个注解
 			parser.parse(candidates);
 			// 这是spring的第三步， validate， 验证配置类
+			// 配置类的主要验证就是：1，@Configuration类不能是final的，2，@Configuration类里的@Bean的方法不能是final的。都是因为后续要进行CGLIB代理
 			parser.validate();
 
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
