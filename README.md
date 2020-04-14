@@ -28,3 +28,6 @@ Follow [@SpringCentral](https://twitter.com/springcentral), [@SpringFramework](h
 ## License
 
 The Spring Framework is released under version 2.0 of the [Apache License](https://www.apache.org/licenses/LICENSE-2.0).
+
+## 注释by wang
+这个项目是在阅读了源码的基础上，进行了一些注释，方便自己理解代码
