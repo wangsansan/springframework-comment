@@ -89,10 +89,14 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #findCandidateAdvisors
 	 * @see #sortAdvisors
 	 * @see #extendAdvisors
+	 * 查找一个class满足的所有advisor
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+		// 返回所有的advisor
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+		// 查找适合当前beanClass的advisor
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+		// 如果eligibleAdvisors不为空，给eligibleAdvisors加上一个默认的advisor： ExposeInvocationInterceptor.ADVISOR
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
@@ -103,6 +107,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	/**
 	 * Find all candidate Advisors to use in auto-proxying.
 	 * @return the List of candidate Advisors
+	 * 返回配置的所有的advisor
 	 */
 	protected List<Advisor> findCandidateAdvisors() {
 		Assert.state(this.advisorRetrievalHelper != null, "No BeanFactoryAdvisorRetrievalHelper available");
@@ -162,6 +167,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * required by some of the later advisors.
 	 * @param candidateAdvisors the Advisors that have already been identified as
 	 * applying to a given bean
+	 * 扩展钩子：留给子类重写方法增加advisor
 	 */
 	protected void extendAdvisors(List<Advisor> candidateAdvisors) {
 	}

@@ -12,6 +12,7 @@
 package com.wang.service;
 
 import com.wang.annotation.WangAnno;
+import com.wang.annotation.WangService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -28,6 +29,7 @@ public class WangAspectService {
 		System.out.println("--------logic-----test");
 	}
 
+	@WangService
 	@WangAnno
 	public void test1() {
 		System.out.println("-------logic-----test1");

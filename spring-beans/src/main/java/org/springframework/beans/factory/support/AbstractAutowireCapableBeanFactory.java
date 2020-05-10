@@ -502,7 +502,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
 			// 第一次调用BeanPostProcessor--aop设置，
-			// 将不需要进行aop操作的beanName放入到advisedBeans里面，advisedBeans.put(beanName,false)
+			// 将不需要进行aop操作的beanName放入到advisedBeans里面，
+			// @PointCut @Advice @Advisor AopInfrastructureBean 或者Aspect不能被代理，放到advisedBeans里
+			// advisedBeans.put(beanName,false)，
 			// 90%的情况返回null
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {

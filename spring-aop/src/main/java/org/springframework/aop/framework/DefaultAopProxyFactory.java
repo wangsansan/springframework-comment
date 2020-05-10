@@ -57,9 +57,11 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 			if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
 				return new JdkDynamicAopProxy(config);
 			}
+			// cglib的aop代理
 			return new ObjenesisCglibAopProxy(config);
 		}
 		else {
+			// jdk的aop代理
 			return new JdkDynamicAopProxy(config);
 		}
 	}

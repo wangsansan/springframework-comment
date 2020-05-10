@@ -59,6 +59,7 @@ public class Test {
 		ac.registerBeanDefinition("son", genericBeanDefinition);
 
 
+
 //		System.out.println(ac.getBean(UserService.class).getIndexService().getUserService());
 //		ac.scan();
 
@@ -112,9 +113,9 @@ public class Test {
 //		});
 //		int scan = customScanner.scan("com.wang.inter");
 //		System.out.println(scan);
-//		WangAspectService wangAspectService = ac.getBean(WangAspectService.class);
-//		wangAspectService.test();
-//		wangAspectService.test1();
+		WangAspectService wangAspectService = ac.getBean(WangAspectService.class);
+		wangAspectService.test();
+		wangAspectService.test1();
 //		System.out.println(ac.getBean(E.class));
 //		System.out.println(ac.getBean(SpringUtils.class).getApplicationContext());
 //		System.out.println(ac.getBean(MyService.class));
