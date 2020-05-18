@@ -232,6 +232,10 @@ public class ScheduledAnnotationBeanPostProcessor
 		}
 	}
 
+	/**
+	 * 1. 在这个方法里设置TaskScheduler为ConcurrentTaskScheduler
+	 * 这个地方TaskScheduler的设置可扩展，所以ShedLock框架才可以在此处set了自己配置了AOP的TaskScheduler
+	 */
 	private void finishRegistration() {
 		if (this.scheduler != null) {
 			this.registrar.setScheduler(this.scheduler);
@@ -296,7 +300,9 @@ public class ScheduledAnnotationBeanPostProcessor
 				}
 			}
 		}
-
+		/**
+		 * 把获取的Task封装成ScheduledTask，并全都放入到registrar的schedulerTasks属性里面
+		 */
 		this.registrar.afterPropertiesSet();
 	}
 
@@ -331,6 +337,12 @@ public class ScheduledAnnotationBeanPostProcessor
 		return bean;
 	}
 
+	/**
+	 * 这个是bean实例化的最后一个BeanPostProcessor的调用时机（一般进行AOP操作，此处进行schedule方法的封装）
+	 * @param bean the new bean instance
+	 * @param beanName the name of the bean
+	 * @return
+	 */
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) {
 		if (bean instanceof AopInfrastructureBean || bean instanceof TaskScheduler ||
@@ -341,6 +353,7 @@ public class ScheduledAnnotationBeanPostProcessor
 
 		Class<?> targetClass = AopProxyUtils.ultimateTargetClass(bean);
 		if (!this.nonAnnotatedClasses.contains(targetClass)) {
+			//查找出所有加了@Scheduled注解的方法
 			Map<Method, Set<Scheduled>> annotatedMethods = MethodIntrospector.selectMethods(targetClass,
 					(MethodIntrospector.MetadataLookup<Set<Scheduled>>) method -> {
 						Set<Scheduled> scheduledMethods = AnnotatedElementUtils.getMergedRepeatableAnnotations(
@@ -355,6 +368,7 @@ public class ScheduledAnnotationBeanPostProcessor
 			}
 			else {
 				// Non-empty set of methods
+				// 处理加了@Scheduled注解的方法
 				annotatedMethods.forEach((method, scheduledMethods) ->
 						scheduledMethods.forEach(scheduled -> processScheduled(scheduled, method, bean)));
 				if (logger.isTraceEnabled()) {
@@ -372,9 +386,12 @@ public class ScheduledAnnotationBeanPostProcessor
 	 * @param method the method that the annotation has been declared on
 	 * @param bean the target bean instance
 	 * @see #createRunnable(Object, Method)
+	 * 处理bean对象上加了@Scheduled注解的方法
+	 * 封装成Runnable对象，同时封装成对应的运行时机的Task（一般咱们都是CronTask），放入到scheduledTasks里面
 	 */
 	protected void processScheduled(Scheduled scheduled, Method method, Object bean) {
 		try {
+			//1. 封装成一个Runnable的对象，run()方法是通过反射进行method的invoke
 			Runnable runnable = createRunnable(bean, method);
 			boolean processedSchedule = false;
 			String errorMessage =
