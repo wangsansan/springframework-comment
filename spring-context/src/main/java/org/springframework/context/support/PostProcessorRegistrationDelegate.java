@@ -123,6 +123,7 @@ final class PostProcessorRegistrationDelegate {
 			// Finally, invoke all other BeanDefinitionRegistryPostProcessors until no further ones appear.
 			// 最后执行剩余的BeanDefinitionRegistryPostProcessors，
 			// 一般用户自定义的实现了BeanDefinitionRegistryPostProcessor接口的在此处执行，Mybatis-Spring中的MapperScannerConfigurer就在此处执行
+			// MapperScannerConfigurer在此处干的工作是对mapper类进行扫描，把BeanDefinition加入到容器中
 			// 此处使用循环是因为防止在执行某个用户自定义的BeanDefinitionRegistryPostProcessor在执行接口方法的过程中，往BeanDefinitionMap中添加新的BeanDefinitionRegistryPostProcessor实现类
 			boolean reiterate = true;
 			while (reiterate) {
