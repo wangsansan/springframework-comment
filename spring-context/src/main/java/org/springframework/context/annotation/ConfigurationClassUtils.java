@@ -117,7 +117,7 @@ abstract class ConfigurationClassUtils {
 		if (isFullConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
-		// 如果加了@Componet @Import @ComponetScan @ImportResource 四个其中一个，就是个lite的配置类
+		// 如果加了@Componet @Import @ComponentScan @ImportResource 四个其中一个，就是个lite的配置类
 		else if (isLiteConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
