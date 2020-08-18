@@ -93,6 +93,7 @@ final class PostProcessorRegistrationDelegate {
 			// 除非之前通过执行ac.addBeanDefinition添加了自定义的BeanDefinition
 			// 但是当这一步的ConfigurationClassPostProcessor执行完了，那么BeanDefinition被扫描进了beanFactory中之后，
 			// 下面几步执行getBeanNamesForType方法便有了实际的意义
+			// 执行beanFactory.getBeanNamesForType方法的时候会生成已有BeanDefinition的MergedBeanDefinition，所以在BeanFactoryPostProcessor执行完了以后，就会有所有的mergedBeanDefinition
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
@@ -213,6 +214,7 @@ final class PostProcessorRegistrationDelegate {
 	public static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
 
+		//这一步会触发生成新的MergedBeanDefinition，因为在执行BeanFactoryPostProcessor的时候清除了所有的不重要的MergedBeanDefinition
 		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
 
 		// Register BeanPostProcessorChecker that logs an info message when

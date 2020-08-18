@@ -121,6 +121,8 @@ class ComponentScanAnnotationParser {
 			basePackages.add(ClassUtils.getPackageName(clazz));
 		}
 		if (basePackages.isEmpty()) {
+			//如果没有配置commonScan属性，那么就把application类所在的package设置为baskPackage
+			//springboot的application就利用了这处逻辑
 			basePackages.add(ClassUtils.getPackageName(declaringClass));
 		}
 

@@ -298,6 +298,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (bean != null) {
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
+				// 对bean进行proxy操作
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}
 		}
@@ -353,7 +354,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			// 第二步，创建代理
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
-			// 缓存下创建代理时生成的代理类型，防止scope是原型，可以直接使用
+			// 缓存创建代理时生成的代理类型，防止scope是原型，可以直接使用
 			this.proxyTypes.put(cacheKey, proxy.getClass());
 			return proxy;
 		}
