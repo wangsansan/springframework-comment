@@ -48,12 +48,19 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 
 	@Override
 	public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
+		// 如果开启了优化，或者ProxyTargetClass设置为true
+		// 或者没有提供代理类需要实现的接口，那么使用cglib代理
+		// 在前面分析参数的时候已经说过了
+		// 默认情况下Optimize都为false,也不建议设置为true,因为会进行一些侵入性的优化
+		// 除非你对cglib的优化非常了解，否则不建议开启
 		if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
 			Class<?> targetClass = config.getTargetClass();
 			if (targetClass == null) {
 				throw new AopConfigException("TargetSource cannot determine target class: " +
 						"Either an interface or a target is required for proxy creation.");
 			}
+			// 如果需要被代理的类本身就是接口或者需要被代理的类本身就是个代理类
+			// 那么一定使用jdk代理
 			if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
 				return new JdkDynamicAopProxy(config);
 			}

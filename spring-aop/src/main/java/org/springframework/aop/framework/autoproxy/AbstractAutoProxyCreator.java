@@ -247,9 +247,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
 			// advisedBeans中放入的是不需要被aop代理的类，譬如某个Aspect类或者已经被aop代理过的类
 			// 总而言之放的是不再需要被aop代理的类
+			// advisedBeans从字面上看是已被 通知过的bean，其实应该理解为不再需要被aop代理的类
 			if (this.advisedBeans.containsKey(cacheKey)) {
 				return null;
 			}
+			// 如果类是加了aop相关注解的基础设施类，或者beanName是原生类类名（.ORIGINAL结尾）
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
@@ -335,9 +337,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @return a proxy wrapping the bean, or the raw bean instance as-is
 	 */
 	protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
+		// 在postProcessBeforeInstantiation方法中可能已经完成过代理了
+		// 如果已经完成代理了，那么直接返回这个代理的对象
 		if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {
 			return bean;
 		}
+		// 在postProcessBeforeInstantiation方法中可能已经完成过代理了
+		// 如果已经完成代理了，那么直接返回这个代理的对象
 		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
 			return bean;
 		}
@@ -347,7 +353,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		}
 
 		// Create proxy if we have advice.
-		// 第一步，找到所有的advisors，包括加上的默认的
+		// 第一步，找到适用于这个bean的所有的advisors，包括加上的默认的
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
@@ -359,6 +365,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			return proxy;
 		}
 
+		//如果specificInterceptors是empty的话，代表没有advisor适用于这个bean，那么也标记为不需要进行代理
 		this.advisedBeans.put(cacheKey, Boolean.FALSE);
 		return bean;
 	}
@@ -374,7 +381,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @see org.springframework.aop.Advisor
 	 * @see org.springframework.aop.framework.AopInfrastructureBean
 	 * @see #shouldSkip
-	 * 加了@Point、@Advice、@Advisor注解或者AopInfrastructureBean的子类
+	 * 加了@Pointcut、@Advice、@Advisor注解或者AopInfrastructureBean的子类
 	 */
 	protected boolean isInfrastructureClass(Class<?> beanClass) {
 		boolean retVal = Advice.class.isAssignableFrom(beanClass) ||
@@ -453,6 +460,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
 		}
 
+		// 创建一个ProxyFactory，并把当前对象的某些属性拷贝填充到该proxyFactory对象上
 		ProxyFactory proxyFactory = new ProxyFactory();
 		proxyFactory.copyFrom(this);
 
@@ -475,6 +483,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			proxyFactory.setPreFiltered(true);
 		}
 
+		// 通过proxyFactory创建代理
 		return proxyFactory.getProxy(getProxyClassLoader());
 	}
 

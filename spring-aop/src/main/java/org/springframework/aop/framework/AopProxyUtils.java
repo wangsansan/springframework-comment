@@ -130,6 +130,12 @@ public abstract class AopProxyUtils {
 				specifiedInterfaces = advised.getProxiedInterfaces();
 			}
 		}
+		// 第三步：为代理类添加三个默认需要实现的接口，分别是
+		// 1.SpringProxy,一个标记接口，代表这个类是通过Spring的AOP代理生成的
+		// 2.Advised，提供了管理通知的方法
+		// 3.DecoratingProxy，用户获取到真实的目标对象
+		// 这个真实对象指的是在嵌套代理的情况下会获取到最终的目标对象
+		// 而不是指返回这个ProxyFactory的target
 		boolean addSpringProxy = !advised.isInterfaceProxied(SpringProxy.class);
 		boolean addAdvised = !advised.isOpaque() && !advised.isInterfaceProxied(Advised.class);
 		boolean addDecoratingProxy = (decoratingProxy && !advised.isInterfaceProxied(DecoratingProxy.class));

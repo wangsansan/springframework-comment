@@ -306,6 +306,7 @@ public class ScriptFactoryPostProcessor extends InstantiationAwareBeanPostProces
 	@Override
 	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) {
 		// We only apply special treatment to ScriptFactory implementations here.
+		// 只要不是ScriptFactory的类，就return
 		if (!ScriptFactory.class.isAssignableFrom(beanClass)) {
 			return null;
 		}

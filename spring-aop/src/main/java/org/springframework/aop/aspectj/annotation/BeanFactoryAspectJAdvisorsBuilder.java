@@ -89,9 +89,12 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 				if (aspectNames == null) {
 					List<Advisor> advisors = new ArrayList<>();
 					aspectNames = new ArrayList<>();
+					// 会获取到容器中的所有BeanName
 					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 							this.beanFactory, Object.class, true, false);
 					for (String beanName : beanNames) {
+						// 如果对beanName配置了正则匹配的话，那么要按照正则表达式的匹配规则进行过滤
+						// 默认是没有的，可以认为isEligibleBean始终返回true
 						if (!isEligibleBean(beanName)) {
 							continue;
 						}

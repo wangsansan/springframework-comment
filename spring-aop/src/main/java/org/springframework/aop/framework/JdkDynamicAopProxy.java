@@ -169,10 +169,18 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				// The target does not implement the hashCode() method itself.
 				return hashCode();
 			}
+			// completeProxiedInterfaces中添加的第三个代理接口
+			// 防止用于获取目标对象的方法也被代理invoke，详细介绍看这段
+			// 也就是说我们调用的是DecoratingProxy这个接口中的方法
+			// 这个接口中只定义了一个getDecoratedClass方法，用于获取到
+			// 最终的目标对象，在方法实现中会通过一个while循环来不断接近
+			// 最终的目标对象，直到得到的目标对象不是一个被代理的对象才会返回
 			else if (method.getDeclaringClass() == DecoratingProxy.class) {
 				// There is only getDecoratedClass() declared -> dispatch to proxy config.
 				return AopProxyUtils.ultimateTargetClass(this.advised);
 			}
+			// completeProxiedInterfaces中添加的第二个接口
+			// 说明调用的是Advised接口中的方法，这里只是单纯的进行反射调用
 			else if (!this.advised.opaque && method.getDeclaringClass().isInterface() &&
 					method.getDeclaringClass().isAssignableFrom(Advised.class)) {
 				// Service invocations on ProxyConfig with the proxy config...
@@ -181,6 +189,8 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 
 			Object retVal;
 
+			// 说明需要将代理类暴露到线程上下文中
+			// 调用AopContext.setCurrentProxy方法将其放入到一个threadLocal中
 			if (this.advised.exposeProxy) {
 				// Make invocation available if necessary.
 				oldProxy = AopContext.setCurrentProxy(proxy);

@@ -566,6 +566,8 @@ class ConfigurationClassParser {
 						ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
+						// 如果是一个DeferredImportSelector，添加到deferredImportSelectors集合中去
+						// 在所有的配置类完成解析后再去处理deferredImportSelectors集合中的ImportSelector
 						//注意此处，Springboot的@EnableAutoConfiguration就是利用此处代码实现的
 						//其注解import进来的AutoConfigurationImportSelector符合了该条件
 						if (selector instanceof DeferredImportSelector) {
@@ -596,6 +598,8 @@ class ConfigurationClassParser {
 						// process it as an @Configuration class
 						this.importStack.registerImport(
 								currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
+						// 既不是一个ImportSelector也不是一个ImportBeanDefinitionRegistrar，直接导入一个普通类
+						// 并将这个类作为配置类进行递归处理
 						// 这一步会把通过@EnableAutoConfiguration扫描到的注释类放入到 configurationClasses 里面
 						processConfigurationClass(candidate.asConfigClass(configClass));
 					}

@@ -484,6 +484,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Make sure bean class is actually resolved at this point, and
 		// clone the bean definition in case of a dynamically resolved Class
 		// which cannot be stored in the shared merged bean definition.
+		//解析BeanDefinition中的beanClass属性
 		Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
 		if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
 			mbdToUse = new RootBeanDefinition(mbd);
@@ -505,7 +506,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			// 将不需要进行aop操作的beanName放入到advisedBeans里面，
 			// @PointCut @Advice @Advisor AopInfrastructureBean 或者Aspect不能被代理，放到advisedBeans里
 			// advisedBeans.put(beanName,false)，
-			// 90%的情况返回null
+			// 90%的情况返回null，判断这个类在之后是否需要进行AOP处理
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
 				return bean;
@@ -602,7 +603,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		try {
 			// 属性注入
 			populateBean(beanName, mbd, instanceWrapper);
-			// 属性注入之后，在这里面执行了aware接口方法
+			// 属性注入之后，执行初始化操作：包括在这里面执行了aware接口方法，@PostConstruct注解 initializingBean之类的，最后进行aop
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -644,6 +645,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Register bean as disposable.
 		try {
+			//注册需要销毁的Bean,放到一个需要销毁的Map中（disposableBeans）
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
 		catch (BeanDefinitionValidationException ex) {
@@ -1107,8 +1109,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
 					// 此处绝大数情况都会返回null
+					// 这里执行的主要是AbstractAutoProxyCreator这个类中的方法，决定是否要进行AOP代理
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
+					// 这里执行了一个短路操作，如果在这个后置处理中直接返回了一个Bean,那么后面相关的操作就不会执行了，只会执行一个AOP的代理操作
 					if (bean != null) {
+						// 虽然这个Bean被短路了，意味着不需要经过后面的初始化阶段.
+						// 但是如果需要代理的话，还是要进行AOP代理，
+						// 这个地方的短路操作只是意味着:
+						// 我们直接在后置处理器中提供了一个准备充分的的Bean，这个Bean不需要进行属性注入和初始化，但需不需要进行代理，仍然由AbstractAutoProxyCreator的applyBeanPostProcessorsBeforeInstantiation方法决定。
+						// 在这个地方还是要调用一次Bean的初始化后置处理器保证Bean被完全的处理完
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 					}
 				}
