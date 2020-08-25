@@ -278,11 +278,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
+			// 获取并保存所有的配置类，同时在bd的属性里面标明是full的还是lite的配置类
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
-				// 获取并保存所有的配置类
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
 		}
+		/**
+		 * 之所以配置类要区分full的还是lite的，是因为只有full的（加了@Configuration注解）的才会进行cglb代理
+		 */
 
 		// Return immediately if no @Configuration classes were found
 		// 上面这句英文注释其实是有问题的，此时configCandidates里面不止是放了加了@Configuration注解的full配置类，还有lite配置类
@@ -315,6 +318,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 
 		// Parse each @Configuration class
+		// 核心目的就是创建这个ConfigurationClassParser对象
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
@@ -369,6 +373,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		while (!candidates.isEmpty());
 
 		// Register the ImportRegistry as a bean in order to support ImportAware @Configuration classes
+		// 注册ImportRegistry到容器中
+		// 当通过@Import注解导入一个全配置类A（被@Configuration注解修饰的类），A可以实现ImportAware接口
+		// 通过这个Aware可以感知到是哪个类导入的A
 		if (sbr != null && !sbr.containsSingleton(IMPORT_REGISTRY_BEAN_NAME)) {
 			sbr.registerSingleton(IMPORT_REGISTRY_BEAN_NAME, parser.getImportRegistry());
 		}
