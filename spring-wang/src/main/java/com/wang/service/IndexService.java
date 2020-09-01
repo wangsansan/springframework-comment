@@ -13,6 +13,7 @@ package com.wang.service;
 
 import com.wang.annotation.WangService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ import javax.annotation.Resource;
 
 //@WangService
 @Service
+//@Async
 public class IndexService {
 
 	@Autowired

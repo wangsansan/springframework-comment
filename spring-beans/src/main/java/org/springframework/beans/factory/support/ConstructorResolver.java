@@ -435,9 +435,17 @@ class ConstructorResolver {
 			argsToUse = explicitArgs;
 		}
 		else {
+			// 下面这段代码是什么意思呢？
+			// 在原型模式下，我们会多次创建一个Bean,所以Spring对参数以及所使用的方法做了缓存
+			// 在第二次创建原型对象的时候会进入这段缓存的逻辑
+			// 但是这里有个问题，为什么Spring对参数有两个缓存呢？
+			// 一：resolvedConstructorArguments
+			// 二：preparedConstructorArguments
+			// 这里主要是因为，直接使用解析好的构造的参数，因为这样会导致创建出来的所有Bean都引用同一个属性
 			Object[] argsToResolve = null;
 			synchronized (mbd.constructorArgumentLock) {
 				factoryMethodToUse = (Method) mbd.resolvedConstructorOrFactoryMethod;
+				// 缓存已经解析过的工厂方法或者构造方法
 				if (factoryMethodToUse != null && mbd.constructorArgumentsResolved) {
 					// Found a cached factory method...
 					argsToUse = mbd.resolvedConstructorArguments;

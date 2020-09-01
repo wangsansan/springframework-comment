@@ -24,6 +24,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilter;
@@ -121,10 +122,19 @@ public class Test {
 //		System.out.println(ac.getBean(MyService.class));
 		try {
 			BeanInfo beanInfo = Introspector.getBeanInfo(IndexService.class);
-			System.out.println(Arrays.stream(beanInfo.getPropertyDescriptors()).filter(it -> it.getWriteMethod() != null).map(PropertyDescriptor::getName).collect(Collectors.joining(",")));
+			System.out.println(Arrays.stream(beanInfo.getPropertyDescriptors())
+					.filter(it -> it.getWriteMethod() != null)
+					.map(PropertyDescriptor::getName)
+					.collect(Collectors.joining(",")));
 		} catch (IntrospectionException e) {
 			e.printStackTrace();
 		}
+
+		List<String> ts = new LinkedList<String>();
+		ts.add("wang");
+		ResolvableType type = ResolvableType.forInstance(ts);
+		System.out.println(Arrays.toString(type.getGenerics()));
+
 	}
 
 }

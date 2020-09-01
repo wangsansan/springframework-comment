@@ -239,6 +239,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
 
+		//如果是FactoryBean，要把前面的&符号去掉
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
@@ -248,9 +249,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// 突然发现这个地方变量名叫sharedInstance真的牛，共享实例，其实含义是提前暴露的实例
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
+			// 如果直接从单例池中获取到了这个bean(sharedInstance),我们能直接返回吗？
+			// 当然不能，因为获取到的Bean可能是一个factoryBean,如果我们传入的name是 & + beanName 这种形式的话，那是可以返回的，但是我们传入的更可能是一个beanName，那么这个时候Spring就还需要调用这个sharedInstance的getObject方法来创建真正被需要的Bean
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
-
 		else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.

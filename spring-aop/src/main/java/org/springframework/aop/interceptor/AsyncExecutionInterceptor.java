@@ -104,12 +104,14 @@ public class AsyncExecutionInterceptor extends AsyncExecutionAspectSupport imple
 		Method specificMethod = ClassUtils.getMostSpecificMethod(invocation.getMethod(), targetClass);
 		final Method userDeclaredMethod = BridgeMethodResolver.findBridgedMethod(specificMethod);
 
+		//获取一个线程池
 		AsyncTaskExecutor executor = determineAsyncExecutor(userDeclaredMethod);
 		if (executor == null) {
 			throw new IllegalStateException(
 					"No executor specified and no default executor set on AsyncExecutionInterceptor either");
 		}
 
+		//将当前方法执行封装成一个callable对象，然后放入到线程池里
 		Callable<Object> task = () -> {
 			try {
 				Object result = invocation.proceed();
@@ -126,6 +128,7 @@ public class AsyncExecutionInterceptor extends AsyncExecutionAspectSupport imple
 			return null;
 		};
 
+		//任务提交到线程池里
 		return doSubmit(task, executor, invocation.getMethod().getReturnType());
 	}
 

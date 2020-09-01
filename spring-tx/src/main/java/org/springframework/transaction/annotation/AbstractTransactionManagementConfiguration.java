@@ -54,8 +54,12 @@ public abstract class AbstractTransactionManagementConfiguration implements Impo
 	protected PlatformTransactionManager txManager;
 
 
+	// 这个方法就是获取@EnableTransactionManagement的属性
+	// importMetadata：就是@EnableTransactionManagement这个注解所在类的元信息
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
+		// 将EnableTransactionManagement注解中的属性对存入到map中
+		// AnnotationAttributes实际上就是个map
 		this.enableTx = AnnotationAttributes.fromMap(
 				importMetadata.getAnnotationAttributes(EnableTransactionManagement.class.getName(), false));
 		if (this.enableTx == null) {
@@ -64,6 +68,9 @@ public abstract class AbstractTransactionManagementConfiguration implements Impo
 		}
 	}
 
+	// 我们可以配置TransactionManagementConfigurer
+	// 通过TransactionManagementConfigurer向容器中注册一个事务管理器
+	// 一般不会这么使用，更多的是通过@Bean的方式直接注册
 	@Autowired(required = false)
 	void setConfigurers(Collection<TransactionManagementConfigurer> configurers) {
 		if (CollectionUtils.isEmpty(configurers)) {
@@ -77,6 +84,9 @@ public abstract class AbstractTransactionManagementConfiguration implements Impo
 	}
 
 
+	// 向容器中注册一个TransactionalEventListenerFactory
+	// 这个类用于处理@TransactionalEventListener注解
+	// 可以实现对事件的监听，并且在事务的特定阶段对事件进行处理
 	@Bean(name = TransactionManagementConfigUtils.TRANSACTIONAL_EVENT_LISTENER_FACTORY_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public static TransactionalEventListenerFactory transactionalEventListenerFactory() {

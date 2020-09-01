@@ -18,10 +18,10 @@ import org.springframework.stereotype.Service;
 @Component
 public class UserService {
 
-//	@Autowired
-//	private IndexService indexService;
+	@Autowired
+	private IndexService indexService;
 
-//	public IndexService getIndexService() {
-//		return indexService;
-//	}
+	public IndexService getIndexService() {
+		return indexService;
+	}
 }

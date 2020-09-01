@@ -63,11 +63,16 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) {
+		// 没有通知，或者是AOP的基础设施类，那么不进行代理
 		if (this.advisor == null || bean instanceof AopInfrastructureBean) {
 			// Ignore AOP infrastructure such as scoped proxies.
 			return bean;
 		}
 
+		// 对已经被代理的类，不再生成代理，只是将通知添加到代理类的逻辑中
+		// 这里通过beforeExistingAdvisors决定是将通知添加到所有通知之前还是添加到所有通知之后
+		// 在使用@Async注解的时候，beforeExistingAdvisors被设置成了true
+		// 意味着整个方法及其拦截逻辑都会异步执行
 		if (bean instanceof Advised) {
 			Advised advised = (Advised) bean;
 			if (!advised.isFrozen() && isEligible(AopUtils.getTargetClass(bean))) {
@@ -82,6 +87,7 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 			}
 		}
 
+		// 判断需要对哪些Bean进行来代理
 		if (isEligible(bean, beanName)) {
 			ProxyFactory proxyFactory = prepareProxyFactory(bean, beanName);
 			if (!proxyFactory.isProxyTargetClass()) {
@@ -121,6 +127,7 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 	 * <p>Implements caching of {@code canApply} results per bean target class.
 	 * @param targetClass the class to check against
 	 * @see AopUtils#canApply(Advisor, Class)
+	 * 检查针对给定的class，this.advisor是否可以进行后置处理
 	 */
 	protected boolean isEligible(Class<?> targetClass) {
 		Boolean eligible = this.eligibleBeans.get(targetClass);

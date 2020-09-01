@@ -101,10 +101,15 @@ class BeanDefinitionValueResolver {
 	 * @param value the value object to resolve
 	 * @return the resolved object
 	 */
+	// 这个方法的目的就是将解析constructor-arg标签得到的value值进行一次解析
+	// 在解析标签时ref属性会被封装为RuntimeBeanReference，那么在这里进行解析时就会去调用getBean
+	// 在解析value属性会会被封装为TypedStringValue，那么这里会尝试去进行一个转换
+	// 关于标签的解析大家有兴趣的话可以去看看org.springframework.beans.factory.xml.BeanDefinitionParserDelegate#parsePropertyValue
 	@Nullable
 	public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
 		// We must check each value to see whether it requires a runtime reference
 		// to another bean to be resolved.
+		// 解析constructor-arg标签中的ref属性，实际就是调用了getBean
 		if (value instanceof RuntimeBeanReference) {
 			RuntimeBeanReference ref = (RuntimeBeanReference) value;
 			return resolveReference(argName, ref);
@@ -185,6 +190,15 @@ class BeanDefinitionValueResolver {
 			});
 			return copy;
 		}
+		/**
+		 * <constructor-arg>
+		 * 			<set value-type="java.lang.String">
+		 * 				<value>1</value>
+		 * 			</set>
+		 * </constructor-arg>
+		 * 通过上面set标签中的value-type属性对value进行类型转换,
+		 * 如果value-type属性为空,那么这里不会进行类型转换
+		 */
 		else if (value instanceof TypedStringValue) {
 			// Convert value to target type here.
 			TypedStringValue typedStringValue = (TypedStringValue) value;

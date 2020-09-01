@@ -565,12 +565,12 @@ class ConfigurationClassParser {
 
 	private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass,
 			Collection<SourceClass> importCandidates, boolean checkForCircularImports) {
-
+		//普通加了@Component注解之类的类都在此处返回
 		if (importCandidates.isEmpty()) {
 			return;
 		}
 
-		// 如果循环import，直接抛出异常
+		// 如果循环import（类似循环依赖），直接抛出异常
 		if (checkForCircularImports && isChainedImportOnStack(configClass)) {
 			this.problemReporter.error(new CircularImportProblem(configClass, this.importStack));
 		}

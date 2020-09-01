@@ -502,6 +502,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+			// 这个后置处理器的提供了一个短路机制，就是可以提前结束整个Bean的生命周期，直接从这里返回一个Bean
+			// 不过我们一般不会这么做，它的另外一个作用就是对AOP提供了支持，在这里会将一些不需要被代理的Bean进行标记
 			// 第一次调用BeanPostProcessor--aop设置，
 			// 将不需要进行aop操作的beanName放入到advisedBeans里面，
 			// @PointCut @Advice @Advisor AopInfrastructureBean 或者Aspect不能被代理，放到advisedBeans里
@@ -617,15 +619,29 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (earlySingletonExposure) {
+			//此处是从二级缓存里面根据beanName拿出对象，因为二级缓存里放入的是因为循环依赖给其他bean注入的代理对象
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
+				/**
+				 * 此处判断的原因是：
+				 * 譬如A和B循环依赖，getA->getB-getA的过程中，把A进行了proxy，同时放入了二级缓存，
+				 * 那么等到A注入B之后，再走入到initializeBean方法中的时候，不会重新代理了，所以exposedObject == bean恒成立
+				 * 那么此处的判断其实是怕A在initializeBean又进行一次AOP代理
+				 */
 				if (exposedObject == bean) {
+					//为保证同一个对象只有一个，
 					exposedObject = earlySingletonReference;
 				}
+				// 我们之前早期暴露出去的Bean跟现在最后要放到容器中的Bean不是同一个
+				// allowRawInjectionDespiteWrapping为false
+				// 并且当前Bean被当成依赖注入到了别的Bean中
 				else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {
+					// 获取到当前Bean依赖的Bean
 					String[] dependentBeans = getDependentBeans(beanName);
+					// 要得到真实的依赖的Bean
 					Set<String> actualDependentBeans = new LinkedHashSet<>(dependentBeans.length);
 					for (String dependentBean : dependentBeans) {
+						// 移除那些仅仅为了类型检查而创建出来
 						if (!removeSingletonIfCreatedForTypeCheckOnly(dependentBean)) {
 							actualDependentBeans.add(dependentBean);
 						}
@@ -1193,7 +1209,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				}
 			}
 		}
-		// 如果scope=prototype，那么此处便有了意义
+		// 如果scope=prototype，那么此处便有了意义，可以根据之前推断出来的构造方法，直接进行对象实例化
 		if (resolved) {
 			if (autowireNecessary) {
 				return autowireConstructor(beanName, mbd, null, null);
@@ -1206,6 +1222,16 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Candidate constructors for autowiring?
 		// 第二次调用beanPostProcessor，给每个class寻找合适的用来实例化的构造方法，推断构造方法
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
+		// 在推断出来的构造函数中选取一个合适的方法来进行Bean的实例化
+		// ctors不为null：说明存在1个或多个@Autowired标注的方法
+		// mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR：说明是自动注入
+		// mbd.hasConstructorArgumentValues()：配置文件中配置了构造函数要使用的参数
+		// !ObjectUtils.isEmpty(args)：外部传入的参数，必定为null,不多考虑
+		// 上面的条件只要满足一个就会进入到autowireConstructor方法
+		// 第一个条件满足，那么通过autowireConstructor在推断出来的构造函数中再进一步选择一个差异值最小的，参数最长的构造函数
+		// 第二个条件满足，说明没有@Autowired标注的方法，但是需要进行自动注入，那么通过autowireConstructor会去遍历类中申明的所有构造函数，并查找一个差异值最小的，参数最长的构造函数
+		// 第三个条件满足，说明不是自动注入，那么要通过配置中的参数去类中申明的所有构造函数中匹配
+		// 第四个必定为null,不考虑
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
 			return autowireConstructor(beanName, mbd, ctors, args);
@@ -1815,7 +1841,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
-			// 第八次后置处理器，主要是进行proxy
+			// 第八次后置处理器，主要是进行AOP的proxy
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 

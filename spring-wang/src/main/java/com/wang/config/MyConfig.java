@@ -16,7 +16,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 @Component
-@ComponentScan(value = "com.wang")
-@EnableSpringStudy
+//@ComponentScan(value = "com.wang")
+//@EnableSpringStudy
 public class MyConfig {
 }
