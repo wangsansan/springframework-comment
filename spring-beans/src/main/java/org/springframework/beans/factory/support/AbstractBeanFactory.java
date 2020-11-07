@@ -250,7 +250,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			// 如果直接从单例池中获取到了这个bean(sharedInstance),我们能直接返回吗？
-			// 当然不能，因为获取到的Bean可能是一个factoryBean,如果我们传入的name是 & + beanName 这种形式的话，那是可以返回的，但是我们传入的更可能是一个beanName，那么这个时候Spring就还需要调用这个sharedInstance的getObject方法来创建真正被需要的Bean
+			// 当然不能，因为获取到的Bean可能是一个factoryBean,
+			// 如果我们传入的name是 & + beanName 这种形式的话，那是可以返回的，
+			// 但是我们传入的更可能是一个beanName，那么这个时候Spring就还需要调用这个sharedInstance的getObject方法来创建真正被需要的Bean
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 		else {
