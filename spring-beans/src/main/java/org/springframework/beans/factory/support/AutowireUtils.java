@@ -135,6 +135,11 @@ abstract class AutowireUtils {
 	 * @return the resolved value
 	 */
 	public static Object resolveAutowiringValue(Object autowiringValue, Class<?> requiredType) {
+		/**
+		 * 此处的判断其实是为了给某些属性注入ObjectFactory的代理类对象
+		 * 这样的话，只有该对象在使用的时候，可以通过动态代理invoke方法，调用ObjectFactory.getObject才获取真正的对象去处理
+		 * 最常见的就是如果给某个类注入HttpServletRequest、HttpServletResponse对象
+		 */
 		if (autowiringValue instanceof ObjectFactory && !requiredType.isInstance(autowiringValue)) {
 			ObjectFactory<?> factory = (ObjectFactory<?>) autowiringValue;
 			if (autowiringValue instanceof Serializable && requiredType.isInterface()) {
