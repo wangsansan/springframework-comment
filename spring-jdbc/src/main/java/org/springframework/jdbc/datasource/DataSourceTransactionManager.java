@@ -307,6 +307,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 				if (logger.isDebugEnabled()) {
 					logger.debug("Switching JDBC Connection [" + con + "] to manual commit");
 				}
+				// 把自动提交设置为false
 				con.setAutoCommit(false);
 			}
 
@@ -338,8 +339,12 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 	@Override
 	protected Object doSuspend(Object transaction) {
+		/**
+		 * 将事务对象里的连接connection设置为null
+		 */
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
 		txObject.setConnectionHolder(null);
+		// 将当前数据源的连接清空，返回被清空的连接
 		return TransactionSynchronizationManager.unbindResource(obtainDataSource());
 	}
 

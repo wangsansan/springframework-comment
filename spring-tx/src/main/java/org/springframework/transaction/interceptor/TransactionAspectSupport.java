@@ -300,7 +300,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				retVal = invocation.proceedWithInvocation();
 			}
 			catch (Throwable ex) {
-				// 方法执行出现异常，在异常情况下完成事务
+				// 方法执行出现异常，在异常情况下完成事务，可能回滚
 				// target invocation exception
 				completeTransactionAfterThrowing(txInfo, ex);
 				throw ex;

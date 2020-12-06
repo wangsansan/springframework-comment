@@ -390,7 +390,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				// 根据之前的事务定义等相关信息构造一个事务状态对象
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
-				// 真正开启事务，会从数据源中获取连接并绑定到线程上
+				// 真正开启事务，此时才会创建新事务，也就是针对当前的DataSource创建新的connection对象，并放到ThreadLocal中
 				doBegin(transaction, definition);
 				// 在这里会激活同步
 				prepareSynchronization(status, definition);
@@ -427,15 +427,15 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					"Existing transaction found for transaction marked with propagation 'never'");
 		}
 
-		// 如果嵌套的事务传播级别是not_supportted，就挂起外围事务
+		// 如果嵌套的事务传播级别是not_supported，就挂起外围事务
 		if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
 			if (debugEnabled) {
 				logger.debug("Suspending current transaction");
 			}
-			// 挂起外围事务
+			// 挂起事务，并把被挂起的事务属性返回
 			Object suspendedResources = suspend(transaction);
 			boolean newSynchronization = (getTransactionSynchronization() == SYNCHRONIZATION_ALWAYS);
-			// 开启一个新的空事务
+			// 开启一个新事务，被挂起的事务保存到transactionStatus中
 			return prepareTransactionStatus(
 					definition, null, false, newSynchronization, debugEnabled, suspendedResources);
 		}
@@ -449,6 +449,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			SuspendedResourcesHolder suspendedResources = suspend(transaction);
 			try {
 				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
+				//被挂起的事务保存到transactionStatus中
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
 				doBegin(transaction, definition);
@@ -628,6 +629,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			try {
 				Object suspendedResources = null;
 				if (transaction != null) {
+					// 真正挂起的操作
 					suspendedResources = doSuspend(transaction);
 				}
 				String name = TransactionSynchronizationManager.getCurrentTransactionName();
@@ -1060,11 +1062,13 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		if (status.isNewTransaction()) {
 			doCleanupAfterCompletion(status.getTransaction());
 		}
+		// 如果挂起事务不为空
 		if (status.getSuspendedResources() != null) {
 			if (status.isDebug()) {
 				logger.debug("Resuming suspended transaction after completion of inner transaction");
 			}
 			Object transaction = (status.hasTransaction() ? status.getTransaction() : null);
+			// 恢复被挂起的事务
 			resume(transaction, (SuspendedResourcesHolder) status.getSuspendedResources());
 		}
 	}

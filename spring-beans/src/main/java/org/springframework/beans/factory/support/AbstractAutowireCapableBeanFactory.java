@@ -627,9 +627,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				 * 譬如A和B循环依赖，getA->getB-getA的过程中，把A进行了proxy，同时放入了二级缓存，
 				 * 那么等到A注入B之后，再走入到initializeBean方法中的时候，不会重新代理了，所以exposedObject == bean恒成立
 				 * 那么此处的判断其实是怕A在initializeBean又进行一次AOP代理
+				 * exposedObject在属性注入之前就等于了bean，如果此处不等于了，那一定是populate或者initialize方法对exposedObject进行了替换
 				 */
 				if (exposedObject == bean) {
 					//为保证同一个对象只有一个，
+					// 如果某个bean循环依赖了本身，此处便是其更改的地方，使得beanName=proxy
 					exposedObject = earlySingletonReference;
 				}
 				// 我们之前早期暴露出去的Bean跟现在最后要放到容器中的Bean不是同一个

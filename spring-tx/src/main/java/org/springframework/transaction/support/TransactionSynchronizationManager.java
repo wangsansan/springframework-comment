@@ -133,10 +133,12 @@ public abstract class TransactionSynchronizationManager {
 	 * @return a value bound to the current thread (usually the active
 	 * resource object), or {@code null} if none
 	 * @see ResourceTransactionManager#getResourceFactory()
+	 * 获取数据库连接connection的方法
 	 */
 	@Nullable
 	public static Object getResource(Object key) {
 		Object actualKey = TransactionSynchronizationUtils.unwrapResourceIfNecessary(key);
+		//因为可能配置了多个数据源，所以要用数据源作为key，去获取数据库连接
 		Object value = doGetResource(actualKey);
 		if (value != null && logger.isTraceEnabled()) {
 			logger.trace("Retrieved value [" + value + "] for key [" + actualKey + "] bound to thread [" +

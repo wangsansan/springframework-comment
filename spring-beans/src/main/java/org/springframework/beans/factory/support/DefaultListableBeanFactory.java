@@ -1221,6 +1221,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				return multipleBeans;
 			}
 
+			// 此处map的value既有可能是Class的对象，也有可能是bean，多数时候是Class的对象，非Class对象是因为注入的是
+			//applicationContext、BeanFactory等属性
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
 				if (isRequired(descriptor)) {
