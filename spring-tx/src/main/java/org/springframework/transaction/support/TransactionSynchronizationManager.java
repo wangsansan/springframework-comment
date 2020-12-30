@@ -90,6 +90,7 @@ public abstract class TransactionSynchronizationManager {
 	private static final ThreadLocal<Boolean> currentTransactionReadOnly =
 			new NamedThreadLocal<>("Current transaction read-only status");
 
+	//当前事务的隔离级别
 	private static final ThreadLocal<Integer> currentTransactionIsolationLevel =
 			new NamedThreadLocal<>("Current transaction isolation level");
 
@@ -388,6 +389,8 @@ public abstract class TransactionSynchronizationManager {
 	 * flush mode of a Hibernate Session to "FlushMode.NEVER" upfront.
 	 * @see org.springframework.transaction.TransactionDefinition#isReadOnly()
 	 * @see TransactionSynchronization#beforeCommit(boolean)
+	 * 参照上面的setCurrentTransactionReadOnly，此处写法有trick，
+	 * 所以下面这个isCurrentTransactionReadOnly的写法就不用考虑空指针问题了
 	 */
 	public static boolean isCurrentTransactionReadOnly() {
 		return (currentTransactionReadOnly.get() != null);
@@ -455,6 +458,8 @@ public abstract class TransactionSynchronizationManager {
 	 * transaction being active (with backing resource transaction;
 	 * on PROPAGATION_REQUIRED, PROPAGATION_REQUIRES_NEW, etc).
 	 * @see #isSynchronizationActive()
+	 * 结合上面的setActualTransactionalActive方法和isCurrentTransactionReadOnly方法上面的注释
+	 * 这种trick可以以后参照
 	 */
 	public static boolean isActualTransactionActive() {
 		return (actualTransactionActive.get() != null);

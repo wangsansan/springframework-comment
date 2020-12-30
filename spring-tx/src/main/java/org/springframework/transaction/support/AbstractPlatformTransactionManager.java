@@ -351,7 +351,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			definition = new DefaultTransactionDefinition();
 		}
 
-		// 判断是否存在事务
+		// 判断是否存在事务（也就是连接）
 		// 如果之前获取到的连接不为空，并且连接上激活了事务，那么就为true
 		if (isExistingTransaction(transaction)) {
 			// Existing transaction found -> check propagation behavior to find out how to behave.
@@ -378,6 +378,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NESTED) {
 			// 当隔离级别为required,required_new,nested时均需要新建事务
 			// 如果存在同步，将注册的同步挂起
+			// 此处挂起一个null对象，suspendedResources对象里的属性全都为null或者false
 			SuspendedResourcesHolder suspendedResources = suspend(null);
 			if (debugEnabled) {
 				logger.debug("Creating new transaction with name [" + definition.getName() + "]: " + definition);
@@ -385,12 +386,13 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			try {
 				// 开启新事务
 				// 默认情况下，getTransactionSynchronization方法会返回SYNCHRONIZATION_ALWAYS
-				// 所以这里是true
+				// 所以这里是true，根据语义，也就是一个新的同步事务
 				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
 				// 根据之前的事务定义等相关信息构造一个事务状态对象
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
-				// 真正开启事务，此时才会创建新事务，也就是针对当前的DataSource创建新的connection对象，并放到ThreadLocal中
+				// 真正开启事务，
+				// 此时才会创建新事务，也就是针对当前的DataSource创建新的connection对象，并放到ThreadLocal中
 				doBegin(transaction, definition);
 				// 在这里会激活同步
 				prepareSynchronization(status, definition);
@@ -529,6 +531,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				}
 			}
 		}
+		// 如果事务传播机制是其他几种没有进行过判断的，那么将继续在当前事务中执行
+		// 因此事务传播机制为Required也会走下面的逻辑：即复用之前的事务（connection）
 		boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
 		return prepareTransactionStatus(definition, transaction, false, newSynchronization, debugEnabled, null);
 	}
@@ -564,12 +568,12 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 
 		// 是否是一个真实的新的同步
 		// 除了传入的标志之外还需要判断当前线程上的同步是否激活
-		// 没有激活才算是一个真正的新的同步
+		// 没有激活才算是一个真正的新的同步（第一次创建事务的时候，一定是没有激活的）
 		boolean actualNewSynchronization = newSynchronization &&
 				!TransactionSynchronizationManager.isSynchronizationActive();
 
 		// 返回一个事务状态对象
-		// 包含了事务的定于、事务使用的连接、事务是否要开启一个新的同步、事务挂起的资源等
+		// 包含了事务的定义、事务使用的连接、事务是否要开启一个新的同步、事务挂起的资源等
 		return new DefaultTransactionStatus(
 				transaction, newTransaction, actualNewSynchronization,
 				definition.isReadOnly(), debug, suspendedResources);
@@ -580,7 +584,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 */
 	protected void prepareSynchronization(DefaultTransactionStatus status, TransactionDefinition definition) {
 		if (status.isNewSynchronization()) {
-			// 到这里真正激活了事务
+			// 到这里真正激活了事务，只要有事务就是true
 			TransactionSynchronizationManager.setActualTransactionActive(status.hasTransaction());
 			// 隔离级别
 			// 只有在不是默认隔离级别的情况下才会绑定到线程上，否则绑定一个null
@@ -787,6 +791,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				triggerBeforeCompletion(status);
 				beforeCompletionInvoked = true;
 
+				// 此处便是为了事务的NESTED传播机制进行的判断
 				if (status.hasSavepoint()) {
 					if (status.isDebug()) {
 						logger.debug("Releasing transaction savepoint");
@@ -799,6 +804,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 						logger.debug("Initiating transaction commit");
 					}
 					unexpectedRollback = status.isGlobalRollbackOnly();
+					// 其实底层调用的是数据库连接connect.commit();
 					doCommit(status);
 				}
 				else if (isFailEarlyOnGlobalRollbackOnly()) {
@@ -891,6 +897,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction rollback");
 					}
+					// 也是调用的数据库连接connection.rollBack
 					doRollback(status);
 				}
 				else {

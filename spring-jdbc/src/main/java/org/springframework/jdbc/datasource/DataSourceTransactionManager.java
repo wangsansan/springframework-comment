@@ -181,6 +181,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	 * @return the DataSource (never {@code null})
 	 * @throws IllegalStateException in case of no DataSource set
 	 * @since 5.0
+	 * 获取配置文件里设置的DataSource信息
 	 */
 	protected DataSource obtainDataSource() {
 		DataSource dataSource = getDataSource();
@@ -263,8 +264,8 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	 * This implementation sets the isolation level but ignores the timeout.
 	 * 从数据源中获取一个连接
 	 * 将事务定义应用到这个连接上
-	 * 通过这个连接对象显示开启事务
-	 * 将这个连接绑定到线程上下文
+	 * 通过这个连接对象显式开启事务
+	 * 将这个连接绑定到线程上下文（ThreadLocal）
 	 */
 	@Override
 	protected void doBegin(Object transaction, TransactionDefinition definition) {
@@ -284,6 +285,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 				}
 				// 将连接放入到txObject中
 				// 第二个参数为true,标志这是一个新连接
+				// 也就是此处将transaction对象中的数据库连接connection给设置了
 				txObject.setConnectionHolder(new ConnectionHolder(newCon), true);
 			}
 
@@ -311,17 +313,17 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 				con.setAutoCommit(false);
 			}
 
-			// 是否通过显示的语句设置read only，默认是不需要的
+			// 是否通过显式的语句设置read only，默认是不需要的
 			prepareTransactionalConnection(con, definition);
 			txObject.getConnectionHolder().setTransactionActive(true);
 
-			// 将连接绑定到当前线程上下文中，实际存入到线程上下文的是一个map
-			// 其中key为数据源，value为从该数据源中获取的一个连接
 			int timeout = determineTimeout(definition);
 			if (timeout != TransactionDefinition.TIMEOUT_DEFAULT) {
 				txObject.getConnectionHolder().setTimeoutInSeconds(timeout);
 			}
 
+			// 将连接绑定到当前线程上下文中，实际存入到线程上下文（ThreadLocal）的是一个map
+			// 其中key为数据源，value为从该数据源中获取的一个连接
 			// Bind the connection holder to the thread.
 			if (txObject.isNewConnectionHolder()) {
 				TransactionSynchronizationManager.bindResource(obtainDataSource(), txObject.getConnectionHolder());
