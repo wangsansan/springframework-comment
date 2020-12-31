@@ -42,6 +42,9 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 	// 可以看到通知就是TransactionInterceptor
 	// 切点会通过TransactionAttributeSource去解析@Transacational注解
 	// 只会对有这个注解的方法进行拦截
+	// AOP advisor最重要的就是pointCut和advice
+	// pointCut定义了targetClass的哪些方法执行时会使用该advisor，在BeanFactoryTransactionAttributeSourceAdvisor中有pointCut
+	// advice定义了具体执行逻辑，此处的advice就是TransactionInterceptor
 	@Bean(name = TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME)
 	// BeanDefinition的角色是一个基础设施类
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
