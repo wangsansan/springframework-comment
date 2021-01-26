@@ -282,7 +282,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionAttributeSource tas = getTransactionAttributeSource();
 		//获取@Transactional注解的属性
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
-		//获取对应的事务管理器（default：PlatformTransactionManager）
+		//获取对应的事务管理器（default：DataSourceTransactionManager）
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
 		// 切点名称（类名+方法名）,会被作为事务的名称
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
@@ -401,7 +401,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			if (defaultTransactionManager == null) {
 				defaultTransactionManager = this.transactionManagerCache.get(DEFAULT_TRANSACTION_MANAGER_KEY);
 				if (defaultTransactionManager == null) {
-					// 相当于默认的TransactionManager就是PlatformTransactionManager
+					// 如果此处有多于一个PlatformTractionManager，就会报错，一般情况下，我们只有DataSourceTransactionManager
 					defaultTransactionManager = this.beanFactory.getBean(PlatformTransactionManager.class);
 					this.transactionManagerCache.putIfAbsent(
 							DEFAULT_TRANSACTION_MANAGER_KEY, defaultTransactionManager);
