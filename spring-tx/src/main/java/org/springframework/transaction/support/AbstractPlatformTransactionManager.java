@@ -938,6 +938,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			}
 		}
 		finally {
+			// 恢复挂起的事务
 			cleanupAfterCompletion(status);
 		}
 	}

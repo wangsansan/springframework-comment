@@ -239,11 +239,11 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		// 在创建DataSourceTransactionManager将其设置为了true
 		// 标志是否允许
 		DataSourceTransactionObject txObject = new DataSourceTransactionObject();
+		txObject.setSavepointAllowed(isNestedTransactionAllowed());
 		// 从线程上下文中获取到对应的这个连接池中的连接
 		// 获取对应数据源下的这个绑定的连接
 		// 当我们将数据库连接绑定到线程上时，实际上绑定到当前线程的是一个map
 		// 其中key是对应的数据源，value是通过这个数据源获取的一个连接
-		txObject.setSavepointAllowed(isNestedTransactionAllowed());
 		// 如果当前上下文中已经有这个连接了，那么将newConnectionHolder这个标志设置为false
 		// 代表复用了之前的连接（不是一个新连接）
 		ConnectionHolder conHolder =

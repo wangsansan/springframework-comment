@@ -582,6 +582,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			else {
 				// We don't roll back on this exception.
 				// Will still roll back if TransactionStatus.isRollbackOnly() is true.
+				// 走到此处逻辑，应该不是因为transactionAttribute，而是因为发生的异常不是rollBack设置的异常类型，所以需要执行commit操作
 				try {
 					txInfo.getTransactionManager().commit(txInfo.getTransactionStatus());
 				}
