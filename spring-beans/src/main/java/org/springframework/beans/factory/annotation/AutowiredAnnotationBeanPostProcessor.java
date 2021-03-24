@@ -610,7 +610,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				}
 				synchronized (this) {
 					if (!this.cached) {
-						// 下面这个判断，代表如果想要注入的属性为空且required=false时才不进行属性注入
+						// 下面这个判断，代表如果想要注入的属性不为空或required=true时就进行属性注入
 						// 所以如果某个环境某个bean我们不想实例化，那么就需要在注入该bean的类里面使用@Autowired(required=false)
 						if (value != null || this.required) {
 							this.cachedFieldValue = desc;

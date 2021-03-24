@@ -1221,8 +1221,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				return multipleBeans;
 			}
 
-			// 此处map的value既有可能是Class的对象，也有可能是bean，多数时候是Class的对象，非Class对象是因为注入的是
-			//applicationContext、BeanFactory等属性
+			// 此处map的value既有可能是Class的对象，也有可能是bean，多数时候是Class的对象，
+			// 非Class对象是因为注入的是applicationContext、BeanFactory等属性
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
 				if (isRequired(descriptor)) {
@@ -1434,6 +1434,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 				this, requiredType, true, descriptor.isEager());
 		Map<String, Object> result = new LinkedHashMap<>(candidateNames.length);
+		// this.resolvableDependencies里面放着BeanFactory、ApplicationContext、ResourceLoader、ApplicationEventPublisher
 		for (Map.Entry<Class<?>, Object> classObjectEntry : this.resolvableDependencies.entrySet()) {
 			Class<?> autowiringType = classObjectEntry.getKey();
 			if (autowiringType.isAssignableFrom(requiredType)) {
