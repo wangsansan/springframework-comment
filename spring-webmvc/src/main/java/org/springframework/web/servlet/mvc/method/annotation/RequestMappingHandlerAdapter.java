@@ -852,7 +852,9 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 
 		ServletWebRequest webRequest = new ServletWebRequest(request, response);
 		try {
+			// 找出该handlerMethod所在Controller中所有加了@InitBinder注解的方法，该注解的作用可以搜索下
 			WebDataBinderFactory binderFactory = getDataBinderFactory(handlerMethod);
+			// 找出该handlerMethod所在Controller中所有加了@ModelAttribute注解的方法，该注解的作用可以搜索下
 			ModelFactory modelFactory = getModelFactory(handlerMethod, binderFactory);
 
 			ServletInvocableHandlerMethod invocableMethod = createInvocableHandlerMethod(handlerMethod);
@@ -890,6 +892,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				invocableMethod = invocableMethod.wrapConcurrentResult(result);
 			}
 
+			// 真正执行
 			invocableMethod.invokeAndHandle(webRequest, mavContainer);
 			if (asyncManager.isConcurrentHandlingStarted()) {
 				return null;

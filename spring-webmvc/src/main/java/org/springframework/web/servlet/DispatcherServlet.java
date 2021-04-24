@@ -1032,6 +1032,7 @@ public class DispatcherServlet extends FrameworkServlet {
 					}
 				}
 
+				// 执行所有interceptor的preHandle方法
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}

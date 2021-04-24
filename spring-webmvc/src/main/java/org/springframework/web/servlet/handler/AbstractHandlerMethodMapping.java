@@ -360,7 +360,11 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 */
 	@Override
 	protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
+		// 获取request的url
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
+		// 此处是防止在解析的过程中，还有mapping信息往mappingRegistry中写
+		// 不过咱们的应用一般不可能的，一般是启动成功之后咱们才会进行接口调用
+		// 除非以后进行动态加载？
 		this.mappingRegistry.acquireReadLock();
 		try {
 			HandlerMethod handlerMethod = lookupHandlerMethod(lookupPath, request);
@@ -396,6 +400,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			Comparator<Match> comparator = new MatchComparator(getMappingComparator(request));
 			matches.sort(comparator);
 			Match bestMatch = matches.get(0);
+			// 一般情况下，咱们的url只会匹配到一个methodHandler，否则启动就报错了
 			if (matches.size() > 1) {
 				if (logger.isTraceEnabled()) {
 					logger.trace(matches.size() + " matching mappings: " + matches);
@@ -417,6 +422,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			return bestMatch.handlerMethod;
 		}
 		else {
+			// 如果没有找到合适的method，就抛异常了
 			return handleNoMatch(this.mappingRegistry.getMappings().keySet(), lookupPath, request);
 		}
 	}
@@ -548,6 +554,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		 */
 		@Nullable
 		public List<T> getMappingsByUrl(String urlPath) {
+			// 咱们的springMvc应用都是通过这个urlLookup返回mapping的方法的
+			// 至于这个urlLookup的值，应该是springMvc启动的时候添加进去的
 			return this.urlLookup.get(urlPath);
 		}
 
