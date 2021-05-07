@@ -58,6 +58,14 @@ public class DefaultCorsProcessor implements CorsProcessor {
 	private static final Log logger = LogFactory.getLog(DefaultCorsProcessor.class);
 
 
+	/**
+	 * Cors请求校验
+	 * @param config
+	 * @param request the current request
+	 * @param response the current response
+	 * @return
+	 * @throws IOException
+	 */
 	@Override
 	@SuppressWarnings("resource")
 	public boolean processRequest(@Nullable CorsConfiguration config, HttpServletRequest request,
@@ -120,6 +128,7 @@ public class DefaultCorsProcessor implements CorsProcessor {
 			CorsConfiguration config, boolean preFlightRequest) throws IOException {
 
 		String requestOrigin = request.getHeaders().getOrigin();
+		// 进行allowOrigin的校验
 		String allowOrigin = checkOrigin(config, requestOrigin);
 		HttpHeaders responseHeaders = response.getHeaders();
 
@@ -133,6 +142,7 @@ public class DefaultCorsProcessor implements CorsProcessor {
 		}
 
 		HttpMethod requestMethod = getMethodToUse(request, preFlightRequest);
+		// 进行allowMethods的校验
 		List<HttpMethod> allowMethods = checkMethods(config, requestMethod);
 		if (allowMethods == null) {
 			logger.debug("Reject: HTTP '" + requestMethod + "' is not allowed");
@@ -150,10 +160,12 @@ public class DefaultCorsProcessor implements CorsProcessor {
 
 		responseHeaders.setAccessControlAllowOrigin(allowOrigin);
 
+		// 预检请求的话，需要把cors配置里的allowMethods信息返回
 		if (preFlightRequest) {
 			responseHeaders.setAccessControlAllowMethods(allowMethods);
 		}
 
+		// 预检请求的话，需要把cors配置里的allowHeaders信息返回
 		if (preFlightRequest && !allowHeaders.isEmpty()) {
 			responseHeaders.setAccessControlAllowHeaders(allowHeaders);
 		}

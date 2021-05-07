@@ -423,6 +423,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 		}
 		// 进行Cors校验：判断是否是Cors请求，居然就仅仅是判断request的header里Origin 是否为空
 		if (CorsUtils.isCorsRequest(request)) {
+			// 根据url找到符合，应该生效的cors配置（一般情况，我们自己设置的cors配置）
 			CorsConfiguration globalConfig = this.corsConfigurationSource.getCorsConfiguration(request);
 			CorsConfiguration handlerConfig = getCorsConfiguration(handler, request);
 			CorsConfiguration config = (globalConfig != null ? globalConfig.combine(handlerConfig) : handlerConfig);
@@ -527,7 +528,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 			HandlerExecutionChain chain, @Nullable CorsConfiguration config) {
 		/*
 		 * 非简单请求是那种对服务器有特殊要求的请求，比如请求方法是PUT或DELETE，或者Content-Type字段的类型是application/json。
-		 * 非简单请求的CORS请求，会在正式通信之前，增加一次HTTP查询请求，称为"预检"请求（preflight）
+		 * 非简单请求的CORS请求，会在正式通信之前，增加一次HTTP查询请求，称为"预检"请求（preflight），预检请求一般用OPTIONS方式的HTTPMethod
 		 */
 		if (CorsUtils.isPreFlightRequest(request)) {
 			HandlerInterceptor[] interceptors = chain.getInterceptors();
