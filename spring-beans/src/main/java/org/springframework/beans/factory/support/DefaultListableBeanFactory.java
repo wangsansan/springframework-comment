@@ -1332,6 +1332,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 			return result;
 		}
+		// List或者Set在此找到注入对象
 		else if (Collection.class.isAssignableFrom(type) && type.isInterface()) {
 			Class<?> elementType = descriptor.getResolvableType().asCollection().resolveGeneric();
 			if (elementType == null) {
@@ -1350,6 +1351,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (result instanceof List) {
 				Comparator<Object> comparator = adaptDependencyComparator(matchingBeans);
 				if (comparator != null) {
+					// 此处将找到的对象排序，一般情况，我们可以在类上增加@Order注解来实现对象排序
 					((List<?>) result).sort(comparator);
 				}
 			}
