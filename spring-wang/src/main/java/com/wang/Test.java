@@ -16,8 +16,13 @@ import com.wang.aware.SpringUtils;
 import com.wang.config.AppConfig;
 import com.wang.domain.Father;
 import com.wang.domain.Son;
+import com.wang.object.WangObjectService;
+import com.wang.object.factory.WangFactory;
+import com.wang.object.obj.WangObj;
+import com.wang.object.obj.WangObjInterface;
 import com.wang.scaner.CustomScanner;
 import com.wang.service.*;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.ChildBeanDefinition;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -59,6 +64,11 @@ public class Test {
 		genericBeanDefinition.setParentName("father");
 		ac.registerBeanDefinition("son", genericBeanDefinition);
 
+		// 此处通过beanFactory.registerResolvableDependency，将我们的ObjectFactory放入了beanFactory中，
+		// 并给需要WangObjInterface的地方注入了一个代理
+		ConfigurableListableBeanFactory beanFactory = ac.getBeanFactory();
+		beanFactory.registerResolvableDependency(WangObjInterface.class, new WangFactory());
+
 
 
 //		System.out.println(ac.getBean(UserService.class).getIndexService().getUserService());
@@ -97,6 +107,24 @@ public class Test {
 //		childBeanDefinition.setBeanClass(MyService1.class);
 //		ac.registerBeanDefinition("myService1",childBeanDefinition);
 		ac.refresh();
+		WangObjectService wangObjectService = ac.getBean(WangObjectService.class);
+		/**
+		 * my object factory
+		 */
+		System.out.println(wangObjectService.getWangObjInterface());
+
+		// 通过打印getTime来说明我们注入到wangObjectService里面的WangObjInterface对象是不停变化的
+		/**
+		 * time:1515459415337243201
+		 * time:2372863272417888724
+		 * time:5807180451522131159
+		 * time:3509316941870487206
+		 * time:1218124461781113460
+		 */
+		for (int i = 0; i < 5; i++) {
+			System.out.println("time:" + wangObjectService.getTime());
+		}
+
 		Father father = (Father) ac.getBean("father");
 		System.out.println(father.getName());
 		System.out.println(ac.getBean(Son.class).getName());
