@@ -11,6 +11,8 @@
  **/
 package com.wang.postprocessor;
 
+import com.wang.object.factory.WangFactory;
+import com.wang.object.obj.WangObjInterface;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -25,7 +27,8 @@ public class MyBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 //		GenericBeanDefinition beanDefinition = (GenericBeanDefinition) beanFactory.getBeanDefinition("son");
 //		beanDefinition.getPropertyValues().addPropertyValue("age",24);
-		GenericBeanDefinition beanDefinition = (GenericBeanDefinition) beanFactory.getBeanDefinition("indexService");
-		beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+//		GenericBeanDefinition beanDefinition = (GenericBeanDefinition) beanFactory.getBeanDefinition("indexService");
+//		beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+		beanFactory.registerResolvableDependency(WangObjInterface.class, new WangFactory());
 	}
 }

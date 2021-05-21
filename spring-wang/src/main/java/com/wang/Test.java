@@ -66,8 +66,8 @@ public class Test {
 
 		// 此处通过beanFactory.registerResolvableDependency，将我们的ObjectFactory放入了beanFactory中，
 		// 并给需要WangObjInterface的地方注入了一个代理
-		ConfigurableListableBeanFactory beanFactory = ac.getBeanFactory();
-		beanFactory.registerResolvableDependency(WangObjInterface.class, new WangFactory());
+//		ConfigurableListableBeanFactory beanFactory = ac.getBeanFactory();
+//		beanFactory.registerResolvableDependency(WangObjInterface.class, new WangFactory());
 
 
 
