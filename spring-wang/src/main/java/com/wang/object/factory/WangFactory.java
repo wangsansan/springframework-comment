@@ -15,7 +15,7 @@ public class WangFactory implements ObjectFactory<WangObjInterface>, Serializabl
 	private static final long serialVersionUID = -1L;
 
 	@Override
-	public WangObj getObject() throws BeansException {
+	public WangObjInterface getObject() throws BeansException {
 		return new WangObj();
 	}
 
