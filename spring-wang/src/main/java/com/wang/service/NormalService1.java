@@ -11,8 +11,19 @@
  **/
 package com.wang.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NormalService1 {
+
+	@Autowired
+	@Lazy
+	private MyService myService;
+
+	public void doSomething() {
+		myService.getName();
+	}
+
 }

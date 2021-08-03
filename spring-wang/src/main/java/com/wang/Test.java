@@ -107,6 +107,13 @@ public class Test {
 //		childBeanDefinition.setBeanClass(MyService1.class);
 //		ac.registerBeanDefinition("myService1",childBeanDefinition);
 		ac.refresh();
+		NormalService1 normalService1 = ac.getBean(NormalService1.class);
+		normalService1.doSomething();
+		normalService1.doSomething();
+
+		MyService bean = ac.getBean(MyService.class);
+//		System.out.println(bean.getName());
+
 		WangObjectService wangObjectService = ac.getBean(WangObjectService.class);
 		/**
 		 * my object factory
@@ -162,6 +169,7 @@ public class Test {
 		ts.add("wang");
 		ResolvableType type = ResolvableType.forInstance(ts);
 		System.out.println(Arrays.toString(type.getGenerics()));
+
 
 	}
 

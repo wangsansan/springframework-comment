@@ -11,16 +11,16 @@
  **/
 package com.wang.service;
 
+import com.wang.annotation.WangService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
 @Service
 public class MyService {
 
-	private String name;
+	private String name = "fsfdsfsd";
 
 //	public MyService(){
 //		System.out.println("no args");
@@ -45,7 +45,8 @@ public class MyService {
 		this.name = name;
 	}
 
+	@WangService
 	public String getName() {
-		return name;
+		return "撒大声地所";
 	}
 }

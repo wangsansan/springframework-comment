@@ -21,13 +21,15 @@ import org.springframework.stereotype.Component;
 public class WangServiceAspect {
 
 	@Around("@within(com.wang.annotation.WangService) || @annotation(com.wang.annotation.WangService)")
-	public void testAspect(ProceedingJoinPoint joinPoint) {
+	public Object testAspect(ProceedingJoinPoint joinPoint) {
 		System.out.println("-----wangservice-----before----------");
 		try {
-			joinPoint.proceed();
+			Object proceed = joinPoint.proceed();
+			return proceed;
 		} catch (Throwable throwable) {
 			throwable.printStackTrace();
 		}
+		return null;
 	}
 
 }
