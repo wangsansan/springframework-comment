@@ -490,9 +490,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			});
 
 			elements.addAll(0, currElements);
+			// 注意此处，会通过while循环递归获取从父类继承到的属性，进行注入
 			targetClass = targetClass.getSuperclass();
-		}
-		while (targetClass != null && targetClass != Object.class);
+		} while (targetClass != null && targetClass != Object.class);
 
 		return new InjectionMetadata(clazz, elements);
 	}
