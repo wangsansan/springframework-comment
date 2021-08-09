@@ -111,6 +111,9 @@ public class Test {
 		normalService1.doSomething();
 		normalService1.doSomething();
 
+		NewService newService = ac.getBean(NewService.class);
+		newService.doNewThing();
+
 		MyService bean = ac.getBean(MyService.class);
 //		System.out.println(bean.getName());
 

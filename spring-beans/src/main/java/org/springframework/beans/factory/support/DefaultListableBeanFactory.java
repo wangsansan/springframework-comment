@@ -1262,7 +1262,6 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (autowiredBeanNames != null) {
 				autowiredBeanNames.add(autowiredBeanName);
 			}
-			// 大多数情况此处的判断都是true，那么就根据instanceCandidate去容器中查找或者创建bean
 			// 不过如果注入的属性是ApplicationContext之类的，为false，此时的instanceCandidate就是一个已经直接可用的bean
 			if (instanceCandidate instanceof Class) {
 				// resolveCandidate方法具体内容就是BeanFactory.getBean
