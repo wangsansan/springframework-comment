@@ -245,10 +245,9 @@ class ConfigurationClassParser {
 		SourceClass sourceClass = asSourceClass(configClass);
 		do {
 			// 在这个方法里处理各种配置类上的注解，譬如@PropertyValue @ComponentScan @Import @ImportSource  @Bean
+			// 对于普通的非配置类，默认情况下sourceClass第一次是configClass，如果其有父类，会进入循环，获取父类的这些注解，直到父类为空结束
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
-		}
-		// 此处也有个不会被触发的死循环
-		while (sourceClass != null);
+		} while (sourceClass != null);
 
 		// 所有的configClass都要放到configurationClasses里面
 		this.configurationClasses.put(configClass, configClass);
