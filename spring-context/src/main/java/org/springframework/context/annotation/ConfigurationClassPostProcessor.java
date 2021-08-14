@@ -368,9 +368,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				}
 				candidateNames = newCandidateNames;
 			}
-		}
-		// 这里candidates的empty()一定会成立的，所以这么写也没啥
-		while (!candidates.isEmpty());
+		} while (!candidates.isEmpty()); // 此处是一个doWhile语句
 
 		// Register the ImportRegistry as a bean in order to support ImportAware @Configuration classes
 		// 注册ImportRegistry到容器中
