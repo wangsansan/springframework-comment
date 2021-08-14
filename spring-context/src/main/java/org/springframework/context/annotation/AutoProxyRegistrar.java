@@ -56,6 +56,7 @@ public class AutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 	 * 这个类会在configurationClassPostProcessor的postProcessBeanDefinitionRegistry
 	 * 里面统一调用ImportBeanDefinitionRegistrar的registerBeanDefinitions时被调用
 	 * 然后注册相应的BeanDefinition
+	 * 这个类是被@EnableTransactionManagement引入的 {@link TransactionManagementConfigurationSelector#selectImports()}
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {

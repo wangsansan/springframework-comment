@@ -137,7 +137,7 @@ class ConfigurationClassBeanDefinitionReader {
 
 		// 判断配置类是否是被导入进来的，实际的代码就是判断解析出来的configclass中的importedBy集合是否为空
 		// 那么这个importedBy集合是做什么的呢？
-		// 例如A通过@Import导入了B，那么解析B得到得configclass中得importedBy集合就包含了A
+		// 例如A通过@Import导入了B，那么解析B得到的configclass中的importedBy集合就包含了A
 		// 简而言之，importedBy集合就是导入了这个类的其它类（可能同时被多个类导入）
 		// 在前文中我们也分析过了，被多个类同时导入时会调用mergeImportedBy方法在集合中添加一个元素
 		if (configClass.isImported()) {
