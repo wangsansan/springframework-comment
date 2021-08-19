@@ -128,6 +128,7 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 	 * @param targetClass the class to check against
 	 * @see AopUtils#canApply(Advisor, Class)
 	 * 检查针对给定的class，this.advisor是否可以进行后置处理
+	 * eligible翻译是：有资格的
 	 */
 	protected boolean isEligible(Class<?> targetClass) {
 		Boolean eligible = this.eligibleBeans.get(targetClass);
@@ -137,6 +138,8 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 		if (this.advisor == null) {
 			return false;
 		}
+		// 其实就是判断类是否可以进行添加该advisor，也就是判断是否符合该advisor的使用条件
+		// 就是把advisor的pointCut拿出来，pointCut里的classMatcher和methodMatcher拿出来对类及其方法进行判断
 		eligible = AopUtils.canApply(this.advisor, targetClass);
 		this.eligibleBeans.put(targetClass, eligible);
 		return eligible;

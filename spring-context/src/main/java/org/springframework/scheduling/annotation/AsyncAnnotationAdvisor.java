@@ -96,6 +96,13 @@ public class AsyncAnnotationAdvisor extends AbstractPointcutAdvisor implements B
 			@Nullable Supplier<Executor> executor, @Nullable Supplier<AsyncUncaughtExceptionHandler> exceptionHandler) {
 
 		Set<Class<? extends Annotation>> asyncAnnotationTypes = new LinkedHashSet<>(2);
+		/**
+		 * 这儿设置符合pointCut需要的注解
+		 * 此处的executor就是一个扩展点，如果不想用spring的默认单线程线程池，可以自定义一个线程池
+		 * exceptionHandler，顾名思义，就是我们的方法在线程池中执行时报错该如何handle使用的
+		 * advice也就是咱们的interceptor
+		 * pointCut就不多解释了，就是把设置符合什么条件会进行interceptor的invoke方法
+		 */
 		asyncAnnotationTypes.add(Async.class);
 		try {
 			asyncAnnotationTypes.add((Class<? extends Annotation>)
@@ -149,7 +156,7 @@ public class AsyncAnnotationAdvisor extends AbstractPointcutAdvisor implements B
 
 	protected Advice buildAdvice(
 			@Nullable Supplier<Executor> executor, @Nullable Supplier<AsyncUncaughtExceptionHandler> exceptionHandler) {
-
+		// new了一个interceptor
 		AnnotationAsyncExecutionInterceptor interceptor = new AnnotationAsyncExecutionInterceptor(null);
 		interceptor.configure(executor, exceptionHandler);
 		return interceptor;
