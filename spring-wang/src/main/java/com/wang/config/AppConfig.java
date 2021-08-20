@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -44,6 +46,15 @@ public class AppConfig {
 		System.out.println("f init");
 		return new F();
 	}
+
+	/**
+	 * 可以给加了@Async注解的方法指定默认的任务执行器
+	 */
+//	@Bean
+//	public TaskExecutor myExecutor() {
+//		SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
+//		return simpleAsyncTaskExecutor;
+//	}
 
 
 }
