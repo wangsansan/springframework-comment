@@ -75,6 +75,7 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 		// 意味着整个方法及其拦截逻辑都会异步执行
 		if (bean instanceof Advised) {
 			Advised advised = (Advised) bean;
+			// 判断该bean是否符合使用该advisor的条件
 			if (!advised.isFrozen() && isEligible(AopUtils.getTargetClass(bean))) {
 				// Add our local Advisor to the existing proxy's Advisor chain...
 				if (this.beforeExistingAdvisors) {
@@ -87,7 +88,7 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 			}
 		}
 
-		// 判断需要对哪些Bean进行来代理
+		// 如果还不是一个代理类，也需要通过eligible来判断是否符合使用该advisor的条件
 		if (isEligible(bean, beanName)) {
 			ProxyFactory proxyFactory = prepareProxyFactory(bean, beanName);
 			if (!proxyFactory.isProxyTargetClass()) {
