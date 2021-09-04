@@ -181,7 +181,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	 * @return the DataSource (never {@code null})
 	 * @throws IllegalStateException in case of no DataSource set
 	 * @since 5.0
-	 * 获取配置文件里设置的DataSource信息
+	 * 获取当前方法使用的数据源
 	 */
 	protected DataSource obtainDataSource() {
 		DataSource dataSource = getDataSource();
@@ -275,10 +275,10 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		try {
 			// 判断txObject中是否存在连接并且连接上已经激活了事务
 			// txObject是通过之前的doGetTransaction方法得到的
-			// 直接调用的情况下，这个判断肯定为true
+			// 初始情况下，第一次调用事务方法，这个判断肯定为true
 			if (!txObject.hasConnectionHolder() ||
 					txObject.getConnectionHolder().isSynchronizedWithTransaction()) {
-				// 从数据源中获取一个连接
+				// 从数据源中获取一个连接，也就是给新的事务使用的
 				Connection newCon = obtainDataSource().getConnection();
 				if (logger.isDebugEnabled()) {
 					logger.debug("Acquired Connection [" + newCon + "] for JDBC transaction");
@@ -303,7 +303,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 			// Switch to manual commit if necessary. This is very expensive in some JDBC drivers,
 			// so we don't want to do it unnecessarily (for example if we've explicitly
 			// configured the connection pool to set it already).
-			// 设置autoCommit为false,显示开启事务
+			// 设置autoCommit为false, 由代码进行事务提交
 			if (con.getAutoCommit()) {
 				txObject.setMustRestoreAutoCommit(true);
 				if (logger.isDebugEnabled()) {
@@ -315,6 +315,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 			// 是否通过显式的语句设置read only，默认是不需要的
 			prepareTransactionalConnection(con, definition);
+			// 此处将事务设置为激活状态
 			txObject.getConnectionHolder().setTransactionActive(true);
 
 			int timeout = determineTimeout(definition);
@@ -324,7 +325,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 			// 将连接绑定到当前线程上下文中，实际存入到线程上下文（ThreadLocal）的是一个map
 			// 其中key为数据源，value为从该数据源中获取的一个连接
-			// Bind the connection holder to the thread.
+			// Bind the connection holder to the thread.将当前的数据库链接绑定到当前的线程当中
 			if (txObject.isNewConnectionHolder()) {
 				TransactionSynchronizationManager.bindResource(obtainDataSource(), txObject.getConnectionHolder());
 			}
@@ -400,6 +401,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
 
 		// Remove the connection holder from the thread, if exposed.
+		// 解绑当前线程当前数据源的数据库连接，从ThreadLocal里没法再拿到当前connection了
 		if (txObject.isNewConnectionHolder()) {
 			TransactionSynchronizationManager.unbindResource(obtainDataSource());
 		}

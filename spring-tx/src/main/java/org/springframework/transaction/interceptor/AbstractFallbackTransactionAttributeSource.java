@@ -114,7 +114,7 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 		}
 		else {
 			// We need to work it out.
-			// 此处是真正的解析
+			// 此处是真正的解析：从方法或者类（包括接口）上面获取@Transactional注解的元信息
 			TransactionAttribute txAttr = computeTransactionAttribute(method, targetClass);
 			// Put it in the cache.
 			// 解析的结果缓存起来，如果为事务属性为null,也放入一个标志
@@ -123,6 +123,7 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 				this.attributeCache.put(cacheKey, NULL_TRANSACTION_ATTRIBUTE);
 			}
 			else {
+				// methodIdentification 也就是用className+methodName，生成了一个标识字符串
 				String methodIdentification = ClassUtils.getQualifiedMethodName(method, targetClass);
 				if (txAttr instanceof DefaultTransactionAttribute) {
 					((DefaultTransactionAttribute) txAttr).setDescriptor(methodIdentification);
@@ -154,6 +155,7 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 	 * <p>As of 4.1.8, this method can be overridden.
 	 * @since 4.1.8
 	 * @see #getTransactionAttribute
+	 * 从方法或者类（包括接口）上面获取@Transactional注解的元信息
 	 */
 	@Nullable
 	protected TransactionAttribute computeTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
