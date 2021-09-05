@@ -805,6 +805,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					 * 只有newTransaction执行完才会进行数据库commit操作
 					 * 如果a.method里面调用了b.method，此时status里面的newTransaction就是false，除非在调用b.method的时候设置了事务的传播机制是requireNew
 					 * 所以newTransaction的作用其实就是控制要不要进行数据库的commit操作
+					 * 其实也能理解，如果是产生的新事务才需要commit，否则如果是复用的上一个调用方的事务，确实不需要commit
 					 */
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction commit");
