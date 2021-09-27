@@ -459,6 +459,7 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 					Method methodToMatch = targetMethod;
 					try {
 						try {
+							// 根据注解的表达式来判断当前的method是否match
 							shadowMatch = obtainPointcutExpression().matchesMethodExecution(methodToMatch);
 						}
 						catch (ReflectionWorldException ex) {
