@@ -894,8 +894,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
+		/**
+		 * 如果同名的BeanDefinition已经存在
+		 */
 		if (existingDefinition != null) {
 			if (!isAllowBeanDefinitionOverriding()) {
+				/**
+				 * 如果不允许进行BeanDefinition覆盖就会报错，spring默认 allBeanDefinitionOverriding = true
+				 * 不过springBoot从2.1.0，在SpringApplication类中也定义了 allBeanDefinitionOverriding，会覆盖掉spring里的 allBeanDefinitionOverriding 且默认值是false
+				 */
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
 			}
 			else if (existingDefinition.getRole() < beanDefinition.getRole()) {
@@ -920,6 +927,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			/**
+			 * 同名BeanDefinition被覆盖：
+			 * 1. 使用了springboot2.1.0及之后，因为一般不会有人对spring进行二次开发
+			 */
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
