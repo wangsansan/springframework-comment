@@ -664,6 +664,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Register bean as disposable.
 		try {
 			//注册需要销毁的Bean,放到一个需要销毁的Map中（disposableBeans）
+			/**
+			 * 默认情况下，如果bean里面有个叫 shutdown 和 close 的方法，那么这个bean就会被注册
+			 * 当context.close的时候，bean的  close 或 shutdown 方法就会被调用
+			 * close方法的优先级比 shutdown 高
+			 */
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
 		catch (BeanDefinitionValidationException ex) {
