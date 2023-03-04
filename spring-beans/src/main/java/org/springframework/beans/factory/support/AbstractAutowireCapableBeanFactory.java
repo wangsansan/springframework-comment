@@ -665,6 +665,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		try {
 			//注册需要销毁的Bean,放到一个需要销毁的Map中（disposableBeans）
 			/**
+			 * 此处一般是针对通过@Bean注解加入到容器的bean进行销毁方法的设置：
+			 * 		因为 @Bean 注入进来的bean， 默认 destroyMethodName = (infer)，被命中了，可以之后看看为什么@Bean注入的bean需要进行此特殊逻辑
 			 * 默认情况下，如果bean里面有个叫 shutdown 和 close 的方法，那么这个bean就会被注册
 			 * 当context.close的时候，bean的  close 或 shutdown 方法就会被调用
 			 * close方法的优先级比 shutdown 高
