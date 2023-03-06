@@ -111,7 +111,10 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
-								// 遍历切面配置类里所有的没有被@PointCut注解的method，并进行advisor的
+								/**
+								 * 遍历切面配置类里所有的没有被@PointCut注解的method，并进行advisor的
+								 * 同一个aspect里的advisor排序逻辑参照 ReflectiveAspectJAdvisorFactory.METHOD_COMPARATOR
+ 								 */
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 								if (this.beanFactory.isSingleton(beanName)) {
 									this.advisorsCache.put(beanName, classAdvisors);

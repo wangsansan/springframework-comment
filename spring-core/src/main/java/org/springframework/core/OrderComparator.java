@@ -109,6 +109,7 @@ public class OrderComparator implements Comparator<Object> {
 				}
 			}
 		}
+		// 默认返回最低优先级
 		return (order != null ? order : getOrder(obj));
 	}
 

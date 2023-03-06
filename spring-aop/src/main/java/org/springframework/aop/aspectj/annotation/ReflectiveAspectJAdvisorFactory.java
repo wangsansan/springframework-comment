@@ -123,6 +123,11 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 
 		List<Advisor> advisors = new ArrayList<>();
 		// getAdvisorMethods返回了所有没有加@PointCut的method
+		/**
+		 * 注意此处的隐藏逻辑，如果某个Aspect里面写了多个aop方法，此时方法的执行顺序，会在advisorMethods返回时决定
+		 * 默认 Around.class, Before.class, After.class, AfterReturning.class, AfterThrowing.class
+		 * 当注解相同时，根据方法名排序
+		 */
 		for (Method method : getAdvisorMethods(aspectClass)) {
 			// 基于每个method进行advisor的封装，有可能是null
 			Advisor advisor = getAdvisor(method, lazySingletonAspectInstanceFactory, advisors.size(), aspectName);
@@ -156,6 +161,11 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 				methods.add(method);
 			}
 		});
+		/**
+		 * 根据 METHOD_COMPARATOR 对方法进行排序
+		 * 默认 Around.class, Before.class, After.class, AfterReturning.class, AfterThrowing.class
+		 * 当注解相同时，根据方法名排序
+		 */
 		methods.sort(METHOD_COMPARATOR);
 		return methods;
 	}
