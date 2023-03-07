@@ -2003,12 +2003,22 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 */
 	private class FactoryAwareOrderSourceProvider implements OrderComparator.OrderSourceProvider {
 
+		/**
+		 * 这个和spring容器里的对象map正好相反
+		 * 这是一个key是object，value是beanName的map
+		 */
 		private final Map<Object, String> instancesToBeanNames;
 
 		public FactoryAwareOrderSourceProvider(Map<Object, String> instancesToBeanNames) {
 			this.instancesToBeanNames = instancesToBeanNames;
 		}
 
+		/**
+		 * 根据实例找到这个实例的排序源：factoryMethod 或者 实例的类型class
+		 * 以便后续排序的时候从 factoryMethod 或者 class 上查找 Order注解
+		 * @param obj the object to find an order source for
+		 * @return
+		 */
 		@Override
 		@Nullable
 		public Object getOrderSource(Object obj) {
