@@ -900,12 +900,14 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				triggerBeforeCompletion(status);
 
 				if (status.hasSavepoint()) {
+					// 有保存点
 					if (status.isDebug()) {
 						logger.debug("Rolling back transaction to savepoint");
 					}
 					status.rollbackToHeldSavepoint();
 				}
 				else if (status.isNewTransaction()) {
+					// 是否为一个新事务
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction rollback");
 					}
@@ -913,8 +915,10 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					doRollback(status);
 				}
 				else {
+					// 在一个大的事务中，默认情况下，由于propagation=REQUIRED，所以都会进入到这里
 					// Participating in larger transaction
 					if (status.hasTransaction()) {
+						// 根据变量名也能看出端倪，isGlobalRollbackOnParticipationFailure表示部分参与事务失败是否需要全局回滚，默认true
 						if (status.isLocalRollbackOnly() || isGlobalRollbackOnParticipationFailure()) {
 							if (status.isDebug()) {
 								logger.debug("Participating transaction failed - marking existing transaction as rollback-only");
