@@ -132,6 +132,11 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 			// SPR-10785: set callbacks directly on the instance instead of in the
 			// enhanced class (via the Enhancer) in order to avoid memory leaks.
 			Factory factory = (Factory) instance;
+			/**
+			 * 此处在实例化的时候给 proxy 增加了 LookupOverrideMethodInterceptor，当加了 @Lookup 方法运行时，会进行intercept
+			 * 不过看过源码就会发现，该 intercept 并不会进行 method.invoke，仅仅是用来返回了一个对象
+ 			 */
+
 			factory.setCallbacks(new Callback[] {NoOp.INSTANCE,
 					new LookupOverrideMethodInterceptor(this.beanDefinition, this.owner),
 					new ReplaceOverrideMethodInterceptor(this.beanDefinition, this.owner)});
@@ -279,6 +284,10 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 			this.owner = owner;
 		}
 
+		/**
+		 * 读完代码会发现，加了 @Lookup 注解的方法并不会被 invoke，该方法只会返回对象，方法体实际没有意义
+		 * 功能就像是 aop 里面用来标注 pointCut 的方法，虽然我们现在都省略写 pointCut 的方法了
+		 */
 		@Override
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy mp) throws Throwable {
 			// Cast is safe, as CallbackFilter filters are used selectively.

@@ -1247,6 +1247,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
+		/**
+		 * 如果代码里显式定义了构造方法，那么就根据该构造方法进行实例化
+		 */
 		// Preferred constructors for default construction?
 		ctors = mbd.getPreferredConstructors();
 		if (ctors != null) {
@@ -1327,7 +1330,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
-					// 其实调用的就是AutowiredAnnotationBeanPostProcessor里该方法的实现
+					/**
+					 * 其实调用的就是 AutowiredAnnotationBeanPostProcessor 里该方法的实现
+					 * 找到 beanClass 里面加了 @Lookup 注解的方法，lookup 这个单词的意思是  查找
+ 					 */
 					Constructor<?>[] ctors = ibp.determineCandidateConstructors(beanClass, beanName);
 					if (ctors != null) {
 						return ctors;

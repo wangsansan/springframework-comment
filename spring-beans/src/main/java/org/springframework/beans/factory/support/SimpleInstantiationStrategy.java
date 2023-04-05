@@ -88,6 +88,11 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 			return BeanUtils.instantiateClass(constructorToUse);
 		}
 		else {
+			/**
+			 * 已知，如果 beanClass 中有方法加了 @Lookup 注解，会给methodOverrides增加一个LookupOverride，一定会走到此处，
+			 * 还有个所谓的 replaceOverride，目前spring5没有作用，spring6再check下
+			 * 也就是说，在此时构造的都不是原始对象，而是一个cglib proxy bean
+			 */
 			// Must generate CGLIB subclass.
 			return instantiateWithMethodInjection(bd, beanName, owner);
 		}
