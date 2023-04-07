@@ -825,6 +825,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		for (String beanName : beanNames) {
 			// 进行BeanDefinition的合并
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			/**
+			 * 如果 类 是抽象的，当然不管
+			 * 如果 scope 是原型的或者lazy的，那么for循环是不帮忙主动生成 bean 的
+			 * 但是如果此处生成的某个 instance 依赖 该 bean，那么还是会通过 getBean 来初始化 bean，并将其放到 spring 容器中
+			 */
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
 				// 如果是FactoryBean
 				if (isFactoryBean(beanName)) {
