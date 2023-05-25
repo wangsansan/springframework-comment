@@ -284,7 +284,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 		}
 		/**
-		 * 之所以配置类要区分full的还是lite的，是因为只有full的（加了@Configuration注解）的才会进行cglb代理
+		 * 之所以配置类要区分full的还是lite的，是因为只有full的（加了@Configuration注解）的才会进行cglib代理
 		 */
 
 		// Return immediately if no @Configuration classes were found
