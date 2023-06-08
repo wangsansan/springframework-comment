@@ -108,6 +108,10 @@ public class ContextAnnotationAutowireCandidateResolver extends QualifierAnnotat
 			public void releaseTarget(Object target) {
 			}
 		};
+		/**
+		 * 可以看到spring 如果要进行代理设置
+		 * 可以设置几个很简单的属性
+		 */
 		ProxyFactory pf = new ProxyFactory();
 		pf.setTargetSource(ts);
 		Class<?> dependencyType = descriptor.getDependencyType();
