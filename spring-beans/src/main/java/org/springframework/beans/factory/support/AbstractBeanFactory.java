@@ -330,6 +330,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw ex;
 						}
 					});
+					// 如果当前拿到的对象实例sharedInstance是FactoryBean类型，那么会从下面这段代码中通过getObject拿到真正的对象
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 
@@ -1673,6 +1674,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		if (mbd == null) {
 			object = getCachedObjectForFactoryBean(beanName);
 		}
+		/**
+		 * 如果当前 beanInstance 是 FactoryBean 的实例，
+		 * 会在此处通过 FactoryBean 的 getObject 方法返回真正的代理对象
+		 * 注意！！！
+		 * Mockito 的实现原理是通过 bean 生命周期的proxy阶段通过postProcessor实现的，
+		 * 且不会对于FactoryBean进行处理，所以没法Mockito一个通过FactoryBean注入到spring容器中的bean
+		 */
 		if (object == null) {
 			// Return bean instance from factory.
 			FactoryBean<?> factory = (FactoryBean<?>) beanInstance;
