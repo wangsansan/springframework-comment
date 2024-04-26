@@ -31,3 +31,4 @@ The Spring Framework is released under version 2.0 of the [Apache License](https
 
 ## 注释by wang
 这个项目是在阅读了源码的基础上，进行了一些注释，方便自己理解代码
+利用【idea2020.2】进行源码编译，如有编译问题会持续更新，欢迎反馈~
