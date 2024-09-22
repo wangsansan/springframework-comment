@@ -54,6 +54,10 @@ public abstract class AspectJProxyUtils {
 					break;
 				}
 			}
+			/**
+			 * ExposeInvocationInterceptor就是用来传递MethodInvocation的。
+			 * 在后续的任何下调用链环节，只要需要用到当前的MethodInvocation就通过ExposeInvocationInterceptor.currentInvocation()静态方法获得
+			 */
 			if (foundAspectJAdvice && !advisors.contains(ExposeInvocationInterceptor.ADVISOR)) {
 				advisors.add(0, ExposeInvocationInterceptor.ADVISOR);
 				return true;

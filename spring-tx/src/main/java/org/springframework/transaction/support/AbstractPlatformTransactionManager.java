@@ -336,11 +336,12 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 * @see #doGetTransaction
 	 * @see #isExistingTransaction
 	 * @see #doBegin
+	 * TransactionStatus对象封装了@Transactional注解的元信息，是否是新开启的事务（newTransaction），transaction对象（事务对象），被挂起对象
 	 */
 	@Override
 	public final TransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
-		// 获取一个数据库事务对象（DataSourceTransactionObject），
-		// 这个对象中封装了一个从当前线程上下文中获取到的连接
+		// 创建一个事务对象（DataSourceTransactionObject），
+		// 这个对象中封装了一个从当前线程上下文中获取到的数据库连接，最开始的时候是数据库连接是空的，需要在后面的doBegin方法中获取
 		Object transaction = doGetTransaction();
 
 		// Cache debug flag to avoid repeated checks.
@@ -800,6 +801,12 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					status.releaseHeldSavepoint();
 				}
 				else if (status.isNewTransaction()) {
+					/**
+					 * 只有newTransaction执行完才会进行数据库commit操作
+					 * 如果a.method里面调用了b.method，此时status里面的newTransaction就是false，除非在调用b.method的时候设置了事务的传播机制是requireNew
+					 * 所以newTransaction的作用其实就是控制要不要进行数据库的commit操作
+					 * 其实也能理解，如果是产生的新事务才需要commit，否则如果是复用的上一个调用方的事务，确实不需要commit
+					 */
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction commit");
 					}
@@ -852,6 +859,11 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 
 		}
 		finally {
+			/**
+			 * 1. 设置事务状态为执行完成
+			 * 2. 清除事务里的各种同步器
+			 * 3. 恢复挂起的事务
+			 */
 			cleanupAfterCompletion(status);
 		}
 	}
@@ -888,12 +900,14 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				triggerBeforeCompletion(status);
 
 				if (status.hasSavepoint()) {
+					// 有保存点
 					if (status.isDebug()) {
 						logger.debug("Rolling back transaction to savepoint");
 					}
 					status.rollbackToHeldSavepoint();
 				}
 				else if (status.isNewTransaction()) {
+					// 是否为一个新事务
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction rollback");
 					}
@@ -901,8 +915,10 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					doRollback(status);
 				}
 				else {
+					// 在一个大的事务中，默认情况下，由于propagation=REQUIRED，所以都会进入到这里
 					// Participating in larger transaction
 					if (status.hasTransaction()) {
+						// 根据变量名也能看出端倪，isGlobalRollbackOnParticipationFailure表示部分参与事务失败是否需要全局回滚，默认true
 						if (status.isLocalRollbackOnly() || isGlobalRollbackOnParticipationFailure()) {
 							if (status.isDebug()) {
 								logger.debug("Participating transaction failed - marking existing transaction as rollback-only");
@@ -1005,6 +1021,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 * @param status object representing the transaction
 	 */
 	private void triggerAfterCommit(DefaultTransactionStatus status) {
+		// 默认情况下此处是true，new事务的时候设置了
 		if (status.isNewSynchronization()) {
 			if (status.isDebug()) {
 				logger.trace("Triggering afterCommit synchronization");
@@ -1061,13 +1078,22 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 * and invoking doCleanupAfterCompletion.
 	 * @param status object representing the transaction
 	 * @see #doCleanupAfterCompletion
+	 * 1. 设置事务状态为执行完成
+	 * 2. 清除事务里的各种同步器
+	 * 3. 恢复挂起的事务
 	 */
 	private void cleanupAfterCompletion(DefaultTransactionStatus status) {
 		status.setCompleted();
 		if (status.isNewSynchronization()) {
+			// 事务同步管理器里的对象清空，就是各种ThreadLocal对象
 			TransactionSynchronizationManager.clear();
 		}
 		if (status.isNewTransaction()) {
+			/**
+			 * 1. 把事务对象transaction里面的connectHolder里的connection释放，
+			 * 2. 数据库连接关闭
+			 * 3. 把当前线程里当前DataSource绑定connection解绑（ThreadLocal.remove）
+ 			 */
 			doCleanupAfterCompletion(status.getTransaction());
 		}
 		// 如果挂起事务不为空
@@ -1075,6 +1101,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			if (status.isDebug()) {
 				logger.debug("Resuming suspended transaction after completion of inner transaction");
 			}
+			// 此处traction对象还是可以复用的，只不过里面的connection已经被清除了，所以可以复用transaction对象，但是数据库连接需要从挂起的transactionStatus中获取
 			Object transaction = (status.hasTransaction() ? status.getTransaction() : null);
 			// 恢复被挂起的事务
 			resume(transaction, (SuspendedResourcesHolder) status.getSuspendedResources());

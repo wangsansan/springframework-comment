@@ -122,7 +122,14 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 				new LazySingletonAspectInstanceFactoryDecorator(aspectInstanceFactory);
 
 		List<Advisor> advisors = new ArrayList<>();
+		// getAdvisorMethods返回了所有没有加@PointCut的method
+		/**
+		 * 注意此处的隐藏逻辑，如果某个Aspect里面写了多个aop方法，此时方法的执行顺序，会在advisorMethods返回时决定
+		 * 默认 Around.class, Before.class, After.class, AfterReturning.class, AfterThrowing.class
+		 * 当注解相同时，根据方法名排序
+		 */
 		for (Method method : getAdvisorMethods(aspectClass)) {
+			// 基于每个method进行advisor的封装，有可能是null
 			Advisor advisor = getAdvisor(method, lazySingletonAspectInstanceFactory, advisors.size(), aspectName);
 			if (advisor != null) {
 				advisors.add(advisor);
@@ -154,6 +161,11 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 				methods.add(method);
 			}
 		});
+		/**
+		 * 根据 METHOD_COMPARATOR 对方法进行排序
+		 * 默认 Around.class, Before.class, After.class, AfterReturning.class, AfterThrowing.class
+		 * 当注解相同时，根据方法名排序
+		 */
 		methods.sort(METHOD_COMPARATOR);
 		return methods;
 	}
@@ -189,12 +201,18 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 
 		validate(aspectInstanceFactory.getAspectMetadata().getAspectClass());
 
+		// 找到@Pointcut, @Around, @Before, @After, @AfterReturning, @AfterThrowing中的第一个注解
+		// 并将该注解内的表达式和该注解封装成pointCut
 		AspectJExpressionPointcut expressionPointcut = getPointcut(
 				candidateAdviceMethod, aspectInstanceFactory.getAspectMetadata().getAspectClass());
 		if (expressionPointcut == null) {
 			return null;
 		}
-
+		/**
+		 * 根据不同注解，实例化不同的advice
+		 * advisor = pointCut+advice
+		 * 返回
+		 */
 		return new InstantiationModelAwarePointcutAdvisorImpl(expressionPointcut, candidateAdviceMethod,
 				this, aspectInstanceFactory, declarationOrderInAspect, aspectName);
 	}

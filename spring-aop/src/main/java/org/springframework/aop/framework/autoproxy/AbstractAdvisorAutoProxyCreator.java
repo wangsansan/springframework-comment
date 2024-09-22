@@ -92,9 +92,9 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * 查找一个class满足的所有advisor
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
-		// 返回所有的advisor，此处会把因为@EnableTransManagement注解添加进来的@Tranactional注解
+		// 返回所有的advisor
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
-		// 查找适合当前beanClass的advisor
+		// 查找适合当前 beanClass 的 advisor
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 		// 如果eligibleAdvisors不为空，给eligibleAdvisors加上一个默认的advisor： ExposeInvocationInterceptor.ADVISOR
 		extendAdvisors(eligibleAdvisors);

@@ -284,7 +284,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 		}
 		/**
-		 * 之所以配置类要区分full的还是lite的，是因为只有full的（加了@Configuration注解）的才会进行cglb代理
+		 * 之所以配置类要区分full的还是lite的，是因为只有full的（加了@Configuration注解）的才会进行cglib代理
 		 */
 
 		// Return immediately if no @Configuration classes were found
@@ -368,7 +368,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				}
 				candidateNames = newCandidateNames;
 			}
-		} while (!candidates.isEmpty());// 此处是一个doWhile语句
+		}
+		// 这里candidates的empty()一定会成立的，所以这么写也没啥
+		while (!candidates.isEmpty());
 
 		// Register the ImportRegistry as a bean in order to support ImportAware @Configuration classes
 		// 注册ImportRegistry到容器中

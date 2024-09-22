@@ -355,9 +355,17 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// Create proxy if we have advice.
 		// 第一步，找到适用于这个bean的所有的advisors，包括加上的默认的
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
+		/**
+		 * 某些情况下 bean 不需要代理，也就是没有适用的advisor的时候，就不用进行proxy了
+		 */
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
 			// 第二步，创建代理
+			/**
+			 * 注意最后一步，将咱们的bean作为target封装成一个targetSource，作为proxy在invoke方法时的target，
+			 * 可以和lazy注入的targetSource进行对比，lazy注入的时候，每次调用getTarget的时候，从spring容器里获取
+			 * 所以加了@Lazy注解的注入，在方法invoke的时候，会多执行一个getBean
+			 */
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 			// 缓存创建代理时生成的代理类型，防止scope是原型，可以直接使用
@@ -464,15 +472,21 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		ProxyFactory proxyFactory = new ProxyFactory();
 		proxyFactory.copyFrom(this);
 
+		/**
+		 * proxyTargetClass 的含义是 是否代理目标类
+		 * 与之相对的是 代理 targetClass 的接口
+		 */
 		if (!proxyFactory.isProxyTargetClass()) {
 			if (shouldProxyTargetClass(beanClass, beanName)) {
 				proxyFactory.setProxyTargetClass(true);
 			}
 			else {
+				// 评估是否代理 targetClass 的接口
 				evaluateProxyInterfaces(beanClass, proxyFactory);
 			}
 		}
 
+		// 将各种 interceptor 或者 advice 封装成 advisor
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
 		proxyFactory.addAdvisors(advisors);
 		proxyFactory.setTargetSource(targetSource);

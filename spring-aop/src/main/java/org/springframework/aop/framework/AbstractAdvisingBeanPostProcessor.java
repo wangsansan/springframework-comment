@@ -75,6 +75,7 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 		// 意味着整个方法及其拦截逻辑都会异步执行
 		if (bean instanceof Advised) {
 			Advised advised = (Advised) bean;
+			// 判断该bean是否符合使用该advisor的条件
 			if (!advised.isFrozen() && isEligible(AopUtils.getTargetClass(bean))) {
 				// Add our local Advisor to the existing proxy's Advisor chain...
 				if (this.beforeExistingAdvisors) {
@@ -87,7 +88,7 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 			}
 		}
 
-		// 判断需要对哪些Bean进行来代理
+		// 如果还不是一个代理类，也需要通过eligible来判断是否符合使用该advisor的条件
 		if (isEligible(bean, beanName)) {
 			ProxyFactory proxyFactory = prepareProxyFactory(bean, beanName);
 			if (!proxyFactory.isProxyTargetClass()) {
@@ -128,6 +129,7 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 	 * @param targetClass the class to check against
 	 * @see AopUtils#canApply(Advisor, Class)
 	 * 检查针对给定的class，this.advisor是否可以进行后置处理
+	 * eligible翻译是：有资格的
 	 */
 	protected boolean isEligible(Class<?> targetClass) {
 		Boolean eligible = this.eligibleBeans.get(targetClass);
@@ -137,6 +139,8 @@ public abstract class AbstractAdvisingBeanPostProcessor extends ProxyProcessorSu
 		if (this.advisor == null) {
 			return false;
 		}
+		// 其实就是判断类是否可以进行添加该advisor，也就是判断是否符合该advisor的使用条件
+		// 就是把advisor的pointCut拿出来，pointCut里的classMatcher和methodMatcher拿出来对类及其方法进行判断
 		eligible = AopUtils.canApply(this.advisor, targetClass);
 		this.eligibleBeans.put(targetClass, eligible);
 		return eligible;

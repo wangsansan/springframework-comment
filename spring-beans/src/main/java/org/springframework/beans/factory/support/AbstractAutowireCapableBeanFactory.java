@@ -664,6 +664,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Register bean as disposable.
 		try {
 			//注册需要销毁的Bean,放到一个需要销毁的Map中（disposableBeans）
+			/**
+			 * 此处一般是针对通过@Bean注解加入到容器的bean进行销毁方法的设置：
+			 * 		因为 @Bean 注入进来的bean， 默认 destroyMethodName = (infer)，被命中了，可以之后看看为什么@Bean注入的bean需要进行此特殊逻辑
+			 * 当然如果实现了接口 AutoCloseable 或者 DisposableBean 接口，此处也会设置bean的destroyMethod
+			 * 默认情况下，如果bean里面有个叫 shutdown 和 close 的方法，那么这个bean就会被注册
+			 * 当context.close的时候，bean的  close 或 shutdown 方法就会被调用
+			 * close方法的优先级比 shutdown 高
+			 */
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
 		catch (BeanDefinitionValidationException ex) {
@@ -1239,6 +1247,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
+		/**
+		 * 如果代码里显式定义了构造方法，那么就根据该构造方法进行实例化
+		 */
 		// Preferred constructors for default construction?
 		ctors = mbd.getPreferredConstructors();
 		if (ctors != null) {
@@ -1319,7 +1330,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
-					// 其实调用的就是AutowiredAnnotationBeanPostProcessor里该方法的实现
+					/**
+					 * 其实调用的就是 AutowiredAnnotationBeanPostProcessor 里该方法的实现
+					 * 找到 beanClass 里面加了 @Lookup 注解的方法，lookup 这个单词的意思是  查找
+ 					 */
 					Constructor<?>[] ctors = ibp.determineCandidateConstructors(beanClass, beanName);
 					if (ctors != null) {
 						return ctors;

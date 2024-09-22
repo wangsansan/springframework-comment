@@ -207,6 +207,7 @@ public abstract class TransactionSynchronizationManager {
 	 * @return the previously bound value (usually the active resource object)
 	 * @throws IllegalStateException if there is no value bound to the thread
 	 * @see ResourceTransactionManager#getResourceFactory()
+	 * 解绑当前线程当前数据源的数据库连接
 	 */
 	public static Object unbindResource(Object key) throws IllegalStateException {
 		Object actualKey = TransactionSynchronizationUtils.unwrapResourceIfNecessary(key);

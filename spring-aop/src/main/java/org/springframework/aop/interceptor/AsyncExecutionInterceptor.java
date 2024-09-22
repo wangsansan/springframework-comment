@@ -104,7 +104,12 @@ public class AsyncExecutionInterceptor extends AsyncExecutionAspectSupport imple
 		Method specificMethod = ClassUtils.getMostSpecificMethod(invocation.getMethod(), targetClass);
 		final Method userDeclaredMethod = BridgeMethodResolver.findBridgedMethod(specificMethod);
 
-		//获取一个线程池
+		/**获取一个任务执行器
+		 * 1. 从@Async注解里面获取配置的任务执行器
+		 * 2. 从Spring容器中找TaskExecutor类的bean
+		 * 3. 从spring容器中获取名为"taskExecutor"的bean，
+		 * 4. 如果还没有，new SimpleAsyncTaskExecutor()）
+		 */
 		AsyncTaskExecutor executor = determineAsyncExecutor(userDeclaredMethod);
 		if (executor == null) {
 			throw new IllegalStateException(
@@ -128,7 +133,7 @@ public class AsyncExecutionInterceptor extends AsyncExecutionAspectSupport imple
 			return null;
 		};
 
-		//任务提交到线程池里
+		//任务提交
 		return doSubmit(task, executor, invocation.getMethod().getReturnType());
 	}
 
@@ -158,6 +163,7 @@ public class AsyncExecutionInterceptor extends AsyncExecutionAspectSupport imple
 	@Nullable
 	protected Executor getDefaultExecutor(@Nullable BeanFactory beanFactory) {
 		Executor defaultExecutor = super.getDefaultExecutor(beanFactory);
+		// 如果spring容器中没有设置TaskExecutor的bean或者name为taskExecutor的bean，那么就返回默认的SimpleAsyncTaskExecutor
 		return (defaultExecutor != null ? defaultExecutor : new SimpleAsyncTaskExecutor());
 	}
 

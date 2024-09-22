@@ -142,6 +142,12 @@ public class AsyncAnnotationBeanPostProcessor extends AbstractBeanFactoryAwareAd
 	}
 
 
+	/**
+	 * 因为AsyncAnnotationBeanPostProcessor实现了BeanFactoryAware接口
+	 * 所以在实例化的过程中执行到initializeBean步骤的时候，里面第一步就是执行各种实现了Aware接口的接口方法
+	 * 在此处new了一个advisor。advisor简单理解就是：interceptor+pointCut
+	 * @param beanFactory
+	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
 		super.setBeanFactory(beanFactory);

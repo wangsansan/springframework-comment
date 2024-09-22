@@ -227,6 +227,7 @@ public abstract class DataSourceUtils {
 		Assert.notNull(con, "No Connection specified");
 		try {
 			// Reset transaction isolation to previous value, if changed for the transaction.
+			// 如果数据库连接修改过数据库的隔离级别，此处需要还原
 			if (previousIsolationLevel != null) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Resetting isolation level of JDBC Connection [" +
@@ -338,13 +339,16 @@ public abstract class DataSourceUtils {
 			return;
 		}
 		if (dataSource != null) {
+			// 此处不可能获取连接了，因为前面已经解绑了
 			ConnectionHolder conHolder = (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource);
 			if (conHolder != null && connectionEquals(conHolder, con)) {
 				// It's the transactional Connection: Don't close it.
+				// 将connectHolder里的connection设置为null
 				conHolder.released();
 				return;
 			}
 		}
+		// 关闭数据库连接
 		doCloseConnection(con, dataSource);
 	}
 

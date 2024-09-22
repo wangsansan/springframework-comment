@@ -825,6 +825,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		for (String beanName : beanNames) {
 			// 进行BeanDefinition的合并
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			/**
+			 * 如果 类 是抽象的，当然不管
+			 * 如果 scope 是原型的或者lazy的，那么for循环是不帮忙主动生成 bean 的
+			 * 但是如果此处生成的某个 instance 依赖 该 bean，那么还是会通过 getBean 来初始化 bean，并将其放到 spring 容器中
+			 */
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
 				// 如果是FactoryBean
 				if (isFactoryBean(beanName)) {
@@ -894,8 +899,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
+		/**
+		 * 如果同名的BeanDefinition已经存在
+		 */
 		if (existingDefinition != null) {
 			if (!isAllowBeanDefinitionOverriding()) {
+				/**
+				 * 如果不允许进行BeanDefinition覆盖就会报错，spring默认 allBeanDefinitionOverriding = true
+				 * 不过springBoot从2.1.0，在SpringApplication类中也定义了 allBeanDefinitionOverriding，会覆盖掉spring里的 allBeanDefinitionOverriding 且默认值是false
+				 */
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
 			}
 			else if (existingDefinition.getRole() < beanDefinition.getRole()) {
@@ -920,6 +932,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			/**
+			 * 同名BeanDefinition被覆盖：
+			 * 1. 使用了springboot2.1.0及之后，因为一般不会有人对spring进行二次开发
+			 */
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
@@ -1992,12 +2008,22 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 */
 	private class FactoryAwareOrderSourceProvider implements OrderComparator.OrderSourceProvider {
 
+		/**
+		 * 这个和spring容器里的对象map正好相反
+		 * 这是一个key是object，value是beanName的map
+		 */
 		private final Map<Object, String> instancesToBeanNames;
 
 		public FactoryAwareOrderSourceProvider(Map<Object, String> instancesToBeanNames) {
 			this.instancesToBeanNames = instancesToBeanNames;
 		}
 
+		/**
+		 * 根据实例找到这个实例的排序源：factoryMethod 或者 实例的类型class
+		 * 以便后续排序的时候从 factoryMethod 或者 class 上查找 Order注解
+		 * @param obj the object to find an order source for
+		 * @return
+		 */
 		@Override
 		@Nullable
 		public Object getOrderSource(Object obj) {

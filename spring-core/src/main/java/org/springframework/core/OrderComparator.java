@@ -92,11 +92,13 @@ public class OrderComparator implements Comparator<Object> {
 	 */
 	private int getOrder(@Nullable Object obj, @Nullable OrderSourceProvider sourceProvider) {
 		Integer order = null;
+		// 目前spring源码中，很少会传 sourceProvider，基于List进行Autowired时是一个主要应用场景
 		if (obj != null && sourceProvider != null) {
 			Object orderSource = sourceProvider.getOrderSource(obj);
 			if (orderSource != null) {
 				if (orderSource.getClass().isArray()) {
 					Object[] sources = ObjectUtils.toObjectArray(orderSource);
+					// 找到第一个Order注解即可
 					for (Object source : sources) {
 						order = findOrder(source);
 						if (order != null) {
@@ -109,6 +111,7 @@ public class OrderComparator implements Comparator<Object> {
 				}
 			}
 		}
+		// 大多数排序会走到这里，如果没有实现ordered注解，那么默认返回最低优先级
 		return (order != null ? order : getOrder(obj));
 	}
 
